@@ -1,0 +1,20 @@
+"use client";
+
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "danger";
+};
+
+export function Button({ variant = "primary", className = "", ...props }: Props) {
+  const base =
+    "px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 " +
+    "focus:outline-none focus:ring-2 focus:ring-white/10";
+
+  const styles =
+    variant === "primary"
+      ? "bg-gradient-to-b from-fuchsia-500/25 to-pink-500/15 border-white/15 hover:border-pink-300/30 hover:shadow-[0_0_25px_rgba(236,72,153,0.25)] text-white"
+      : variant === "danger"
+      ? "bg-white/5 border-red-300/20 hover:border-red-300/40 hover:shadow-[0_0_22px_rgba(248,113,113,0.18)] text-red-200"
+      : "bg-white/5 border-white/12 hover:border-white/20 hover:bg-white/7 text-white/90";
+
+  return <button className={`${base} ${styles} ${className}`} {...props} />;
+}
