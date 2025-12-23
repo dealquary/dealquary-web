@@ -21,6 +21,7 @@ const getStripe = () => {
 export const stripe = new Proxy({} as Stripe, {
   get: (_, prop) => {
     const stripeInstance = getStripe();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (stripeInstance as any)[prop];
   },
 });

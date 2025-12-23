@@ -150,7 +150,10 @@ function ProductRow({ product: p, dealId, index }: ProductRowProps) {
                 <Select
                   label="Profit Mode"
                   value={p.profitMode}
-                  onChange={(e) => updateProduct(dealId, p.id, { profitMode: e.target.value as any })}
+                  onChange={(e) => {
+                    const value = e.target.value as "MARGIN_PCT" | "PROFIT_PER_UNIT";
+                    updateProduct(dealId, p.id, { profitMode: value });
+                  }}
                 >
                   <option value="MARGIN_PCT">Margin %</option>
                   <option value="PROFIT_PER_UNIT">{p.type === "RECURRING" ? "Profit/License" : "Fixed Profit"}</option>
@@ -222,7 +225,10 @@ function ProductRow({ product: p, dealId, index }: ProductRowProps) {
                       <Select
                         label="Mode"
                         value={p.customerDiscountMode}
-                        onChange={(e) => updateProduct(dealId, p.id, { customerDiscountMode: e.target.value as any })}
+                        onChange={(e) => {
+                          const value = e.target.value as "PERCENT" | "DOLLARS";
+                          updateProduct(dealId, p.id, { customerDiscountMode: value });
+                        }}
                       >
                         <option value="PERCENT">Percent</option>
                         <option value="DOLLARS">Dollars</option>

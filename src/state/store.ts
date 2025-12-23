@@ -56,10 +56,14 @@ export const useAppStore = create<AppState>((set, get) => ({
         const next: Workspace = WorkspaceSchema.parse({
           version: s.version,
           selectedDealId: newDeal.id,
+          comparedDealIds: s.comparedDealIds,
           deals: [...s.deals, newDeal]
         });
         saveWorkspace(next);
-        return next as any;
+        return {
+          ...s,
+          ...next
+        };
       });
     } catch (error) {
       console.error("Failed to create deal:", error);
@@ -68,9 +72,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   selectDeal: (dealId) => {
     set((s) => {
-      const next = WorkspaceSchema.parse({ ...s, selectedDealId: dealId });
+      const next = WorkspaceSchema.parse({
+        version: s.version,
+        selectedDealId: dealId,
+        comparedDealIds: s.comparedDealIds,
+        deals: s.deals
+      });
       saveWorkspace(next);
-      return next as any;
+      return {
+        ...s,
+        ...next
+      };
     });
   },
 
@@ -78,21 +90,37 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const d = get().deals.find((x) => x.id === dealId);
       if (!d) return;
+
+      // Generate smart clone name
+      const existingNames = get().deals.map((deal) => deal.name);
+      let cloneName = `${d.name} (Copy)`;
+      let copyNumber = 2;
+
+      // If base copy name exists, try numbered copies
+      while (existingNames.includes(cloneName)) {
+        cloneName = `${d.name} (Copy ${copyNumber})`;
+        copyNumber++;
+      }
+
       const cloned: Deal = DealSchema.parse({
         ...d,
         id: uid("deal"),
-        name: `${d.name} (Copy)`,
+        name: cloneName,
         products: d.products.map((p) => ({ ...p, id: uid("prod") }))
       });
 
       set((s) => {
         const next = WorkspaceSchema.parse({
-          ...s,
+          version: s.version,
           selectedDealId: cloned.id,
+          comparedDealIds: s.comparedDealIds,
           deals: [...s.deals, cloned]
         });
         saveWorkspace(next);
-        return next as any;
+        return {
+          ...s,
+          ...next
+        };
       });
     } catch (error) {
       console.error("Failed to clone deal:", error);
@@ -103,9 +131,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => {
       const deals = s.deals.filter((d) => d.id !== dealId);
       const selectedDealId = s.selectedDealId === dealId ? (deals[0]?.id ?? null) : s.selectedDealId;
-      const next = WorkspaceSchema.parse({ ...s, deals, selectedDealId });
+      const next = WorkspaceSchema.parse({
+        version: s.version,
+        selectedDealId,
+        comparedDealIds: s.comparedDealIds,
+        deals
+      });
       saveWorkspace(next);
-      return next as any;
+      return {
+        ...s,
+        ...next
+      };
     });
   },
 
@@ -113,12 +149,20 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => {
       try {
         const deals = s.deals.map((d) => (d.id === dealId ? DealSchema.parse({ ...d, ...patch }) : d));
-        const next = WorkspaceSchema.parse({ ...s, deals });
+        const next = WorkspaceSchema.parse({
+          version: s.version,
+          selectedDealId: s.selectedDealId,
+          comparedDealIds: s.comparedDealIds,
+          deals
+        });
         saveWorkspace(next);
-        return next as any;
+        return {
+          ...s,
+          ...next
+        };
       } catch (error) {
         console.error("Failed to update deal:", error);
-        return s as any;
+        return s;
       }
     });
   },
@@ -149,9 +193,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       set((s) => {
         const deals = s.deals.map((d) => (d.id === dealId ? { ...d, products: [...d.products, newProduct] } : d));
-        const next = WorkspaceSchema.parse({ ...s, deals });
+        const next = WorkspaceSchema.parse({
+          version: s.version,
+          selectedDealId: s.selectedDealId,
+          comparedDealIds: s.comparedDealIds,
+          deals
+        });
         saveWorkspace(next);
-        return next as any;
+        return {
+          ...s,
+          ...next
+        };
       });
     } catch (error) {
       console.error("Failed to add product:", error);
@@ -167,12 +219,20 @@ export const useAppStore = create<AppState>((set, get) => ({
           return DealSchema.parse({ ...d, products });
         });
 
-        const next = WorkspaceSchema.parse({ ...s, deals });
+        const next = WorkspaceSchema.parse({
+          version: s.version,
+          selectedDealId: s.selectedDealId,
+          comparedDealIds: s.comparedDealIds,
+          deals
+        });
         saveWorkspace(next);
-        return next as any;
+        return {
+          ...s,
+          ...next
+        };
       } catch (error) {
         console.error("Failed to update product:", error);
-        return s as any;
+        return s;
       }
     });
   },
@@ -185,9 +245,17 @@ export const useAppStore = create<AppState>((set, get) => ({
         return DealSchema.parse({ ...d, products });
       });
 
-      const next = WorkspaceSchema.parse({ ...s, deals });
+      const next = WorkspaceSchema.parse({
+        version: s.version,
+        selectedDealId: s.selectedDealId,
+        comparedDealIds: s.comparedDealIds,
+        deals
+      });
       saveWorkspace(next);
-      return next as any;
+      return {
+        ...s,
+        ...next
+      };
     });
   },
 
@@ -196,17 +264,33 @@ export const useAppStore = create<AppState>((set, get) => ({
       const comparedDealIds = s.comparedDealIds.includes(dealId)
         ? s.comparedDealIds.filter((id) => id !== dealId)
         : [...s.comparedDealIds, dealId];
-      const next = WorkspaceSchema.parse({ ...s, comparedDealIds });
+      const next = WorkspaceSchema.parse({
+        version: s.version,
+        selectedDealId: s.selectedDealId,
+        comparedDealIds,
+        deals: s.deals
+      });
       saveWorkspace(next);
-      return next as any;
+      return {
+        ...s,
+        ...next
+      };
     });
   },
 
   clearComparedDeals: () => {
     set((s) => {
-      const next = WorkspaceSchema.parse({ ...s, comparedDealIds: [] });
+      const next = WorkspaceSchema.parse({
+        version: s.version,
+        selectedDealId: s.selectedDealId,
+        comparedDealIds: [],
+        deals: s.deals
+      });
       saveWorkspace(next);
-      return next as any;
+      return {
+        ...s,
+        ...next
+      };
     });
   }
 }));

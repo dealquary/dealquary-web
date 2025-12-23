@@ -147,7 +147,8 @@ export function calcRampAdjustedRevenue(
 
 export function calcRecurringProduct(
   product: Product,
-  deal: Deal
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _deal: Deal
 ): ProductTotals {
   const qty = clampNonNeg(product.licenses);
   const list = clampNonNeg(product.listPricePerUnitMonthly);

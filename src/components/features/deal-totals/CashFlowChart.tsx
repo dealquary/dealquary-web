@@ -1,6 +1,6 @@
 "use client";
 
-import { calcCumulativeCashFlow, type CashFlowPoint } from "@/lib/calc";
+import { calcCumulativeCashFlow } from "@/lib/calc";
 import type { Deal } from "@/lib/validators";
 
 type CashFlowChartProps = {

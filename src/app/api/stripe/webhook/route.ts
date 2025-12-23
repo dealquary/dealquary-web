@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -15,9 +16,10 @@ export async function POST(req: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
-  } catch (err: any) {
-    console.error("Webhook signature verification failed:", err.message);
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  } catch (err) {
+    logger.error("Webhook signature verification failed", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
   }
 
   try {
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!user) {
-          console.error("User not found for customer:", customerId);
+          logger.error("User not found for customer", undefined, { customerId });
           break;
         }
 
@@ -44,8 +46,8 @@ export async function POST(req: NextRequest) {
 
         // Create subscription record if subscription ID is available
         if (session.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-          const sub: any = subscription;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sub = await stripe.subscriptions.retrieve(session.subscription as string) as any;
 
           await prisma.subscription.upsert({
             where: { stripeSubscriptionId: sub.id },
@@ -68,12 +70,13 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        console.log(`User ${user.email} upgraded to Pro`);
+        logger.info("User upgraded to Pro", { email: user.email });
         break;
       }
 
       case "customer.subscription.updated": {
-        const sub: any = event.data.object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sub = event.data.object as any;
         const customerId = sub.customer as string;
 
         const user = await prisma.user.findUnique({
@@ -81,7 +84,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!user) {
-          console.error("User not found for customer:", customerId);
+          logger.error("User not found for customer", undefined, { customerId });
           break;
         }
 
@@ -113,12 +116,13 @@ export async function POST(req: NextRequest) {
           data: { isPro: isActive },
         });
 
-        console.log(`Subscription updated for ${user.email}: ${sub.status}`);
+        logger.info("Subscription updated", { email: user.email, status: sub.status });
         break;
       }
 
       case "customer.subscription.deleted": {
-        const subscription: any = event.data.object;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const subscription = event.data.object as any;
         const customerId = subscription.customer as string;
 
         const user = await prisma.user.findUnique({
@@ -126,7 +130,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!user) {
-          console.error("User not found for customer:", customerId);
+          logger.error("User not found for customer", undefined, { customerId });
           break;
         }
 
@@ -142,17 +146,18 @@ export async function POST(req: NextRequest) {
           data: { status: "canceled" },
         });
 
-        console.log(`Subscription canceled for ${user.email}`);
+        logger.info("Subscription canceled", { email: user.email });
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.debug("Unhandled event type", { eventType: event.type });
     }
 
     return NextResponse.json({ received: true });
-  } catch (error: any) {
-    console.error("Webhook handler error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    logger.error("Webhook handler error", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

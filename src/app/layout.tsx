@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "SaaS Deal Calculator",
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <SessionProvider>{children}</SessionProvider>
+        <ErrorBoundary>
+          <SessionProvider>{children}</SessionProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

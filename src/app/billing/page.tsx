@@ -35,9 +35,9 @@ export default function BillingPage() {
       if (data.url) {
         window.location.href = data.url;
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Upgrade error:", err);
-      setError(err.message || "Something went wrong");
+      setError(err instanceof Error ? err.message : "Something went wrong");
       setLoading(false);
     }
   };
@@ -72,7 +72,7 @@ export default function BillingPage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">You're already Pro!</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">You&apos;re already Pro!</h2>
               <p className="text-white/70 mb-6">
                 You have access to all Pro features including PDF export.
               </p>

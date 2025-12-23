@@ -18,7 +18,31 @@ export function loadWorkspace(): Workspace {
   }
 }
 
-export function saveWorkspace(ws: Workspace): void {
+// Debounce helper
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  return ((...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      fn(...args);
+      timeoutId = null;
+    }, delay);
+  }) as T;
+}
+
+// Immediate save (not debounced)
+function saveWorkspaceImmediate(ws: Workspace): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(KEY, JSON.stringify(ws));
+}
+
+// Debounced save for performance during rapid updates (300ms delay)
+const debouncedSave = debounce(saveWorkspaceImmediate, 300);
+
+export function saveWorkspace(ws: Workspace): void {
+  debouncedSave(ws);
 }

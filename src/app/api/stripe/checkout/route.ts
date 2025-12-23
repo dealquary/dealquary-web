@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { stripe, STRIPE_PRICE_ID } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,11 +60,12 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
-    console.error("Checkout error:", error);
+  } catch (error) {
+    logger.error("Checkout error", error);
+    const message = error instanceof Error ? error.message : "Failed to create checkout session";
     return NextResponse.json(
-      { error: error.message || "Failed to create checkout session" },
-      { status: error.message === "Unauthorized" ? 401 : 500 }
+      { error: message },
+      { status: message === "Unauthorized" ? 401 : 500 }
     );
   }
 }

@@ -13,7 +13,13 @@ export default function DealEditor() {
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
   const updateDeal = useAppStore((s) => s.updateDeal);
 
+  // Local state for deal name to allow clearing without validation errors
+  const [localName, setLocalName] = useState<string | null>(null);
+
   if (!deal || !selectedDealId) return null;
+
+  // Use local name if editing, otherwise use store value
+  const displayName = localName !== null ? localName : deal.name;
 
   return (
     <div className="space-y-3">
@@ -21,11 +27,21 @@ export default function DealEditor() {
       <Card glow="none">
         <div className="p-3">
           <Input
-            value={deal.name}
+            value={displayName}
             onChange={(e) => {
-              const newName = e.target.value;
-              if (newName.trim().length > 0) {
-                updateDeal(selectedDealId, { name: newName });
+              // Update local state immediately for smooth UX
+              setLocalName(e.target.value);
+            }}
+            onBlur={(e) => {
+              const trimmed = e.target.value.trim();
+              const finalName = trimmed.length > 0 ? trimmed : "Untitled Deal";
+              updateDeal(selectedDealId, { name: finalName });
+              setLocalName(null); // Clear local state after saving
+            }}
+            onKeyDown={(e) => {
+              // Save on Enter key
+              if (e.key === "Enter") {
+                e.currentTarget.blur();
               }
             }}
             className="text-lg font-bold border-0 !px-0 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
@@ -49,7 +65,10 @@ export default function DealEditor() {
             <Select
               label="Billing cadence"
               value={deal.billingCadence}
-              onChange={(e) => updateDeal(selectedDealId, { billingCadence: e.target.value as any })}
+              onChange={(e) => {
+                const value = e.target.value as "MONTHLY" | "ANNUAL_PREPAY";
+                updateDeal(selectedDealId, { billingCadence: value });
+              }}
             >
               <option value="MONTHLY">Monthly</option>
               <option value="ANNUAL_PREPAY">Annual (prepay)</option>
@@ -58,7 +77,10 @@ export default function DealEditor() {
             <Select
               label="Contract length"
               value={deal.contractLengthType}
-              onChange={(e) => updateDeal(selectedDealId, { contractLengthType: e.target.value as any })}
+              onChange={(e) => {
+                const value = e.target.value as "MONTH_TO_MONTH" | "MONTHS" | "YEARS";
+                updateDeal(selectedDealId, { contractLengthType: value });
+              }}
             >
               <option value="MONTH_TO_MONTH">Month-to-month</option>
               <option value="MONTHS">Fixed months</option>
