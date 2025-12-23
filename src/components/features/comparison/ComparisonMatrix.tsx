@@ -1,0 +1,291 @@
+"use client";
+
+import { useAppStore } from "@/state/store";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { calcDealTotals } from "@/lib/calc";
+import { money, num } from "@/lib/format";
+import { useSession, signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+export default function ComparisonMatrix() {
+  const deals = useAppStore((s) => s.deals);
+  const comparedDealIds = useAppStore((s) => s.comparedDealIds);
+  const toggleComparedDeal = useAppStore((s) => s.toggleComparedDeal);
+  const clearComparedDeals = useAppStore((s) => s.clearComparedDeals);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  const comparedDeals = deals.filter((d) => comparedDealIds.includes(d.id));
+  const isPro = session?.user?.isPro || false;
+  const isAuthenticated = status === "authenticated";
+
+  const handlePrint = () => {
+    if (!isAuthenticated) {
+      signIn("google");
+      return;
+    }
+    if (!isPro) {
+      router.push("/billing");
+      return;
+    }
+    window.print();
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Deal Selection */}
+      <Card glow="purple">
+        <div className="p-3 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-white">Select Deals to Compare</h2>
+              <p className="text-xs text-white/60 mt-0.5">
+                {comparedDealIds.length} {comparedDealIds.length === 1 ? "deal" : "deals"} selected
+              </p>
+            </div>
+            {comparedDealIds.length > 0 && (
+              <Button variant="secondary" onClick={clearComparedDeals} className="!text-xs !py-1 !px-2">
+                Clear All
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-3">
+          {deals.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-white/60">No deals available.</p>
+              <p className="text-xs text-white/40 mt-1">Create deals to compare them</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {deals.map((deal) => {
+                const isSelected = comparedDealIds.includes(deal.id);
+                return (
+                  <label
+                    key={deal.id}
+                    className={`
+                      flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer
+                      ${isSelected
+                        ? "border-purple-400/50 bg-purple-500/10"
+                        : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                      }
+                    `}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleComparedDeal(deal.id)}
+                      className="w-4 h-4 text-purple-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-purple-500"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-white text-sm">{deal.name}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge size="sm" variant="default">
+                          {deal.products.length} {deal.products.length === 1 ? "product" : "products"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Comparison Table */}
+      {comparedDeals.length > 0 && (
+        <Card glow="cyan">
+          <div className="p-3 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-white">Deal Comparison</h2>
+              <div className="flex items-center gap-2">
+                {isPro && (
+                  <span className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-400/30">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Pro
+                  </span>
+                )}
+                <button
+                  onClick={handlePrint}
+                  className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-white/70 hover:text-white border border-white/20 rounded-md hover:bg-white/10 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "PDF"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left p-3 font-semibold text-white/70 text-xs uppercase tracking-wide whitespace-nowrap">
+                    Deal Name
+                  </th>
+                  {comparedDeals.map((deal) => (
+                    <th
+                      key={deal.id}
+                      className="text-right p-3 font-semibold text-white text-sm whitespace-nowrap"
+                    >
+                      {deal.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {/* Core Revenue */}
+                <tr className="bg-cyan-500/5">
+                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-cyan-300 uppercase tracking-wide">
+                    Core Revenue
+                  </td>
+                </tr>
+                <MetricRow
+                  label="MRR"
+                  values={comparedDeals.map((d) => money(calcDealTotals(d).effectiveMRR))}
+                />
+                <MetricRow
+                  label="ARR"
+                  values={comparedDeals.map((d) => money(calcDealTotals(d).annualizedRevenue))}
+                />
+                <MetricRow
+                  label="TCV (Total Contract Value)"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return money(t.tcv);
+                  })}
+                  highlight
+                />
+
+                {/* Profitability */}
+                <tr className="bg-green-500/5 border-t border-white/10">
+                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-green-300 uppercase tracking-wide">
+                    Profitability
+                  </td>
+                </tr>
+                <MetricRow
+                  label="Monthly Profit"
+                  values={comparedDeals.map((d) => money(calcDealTotals(d).monthlyProfit))}
+                />
+                <MetricRow
+                  label="Annual Profit"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return money(t.termProfit / (t.termMonths / 12));
+                  })}
+                />
+                <MetricRow
+                  label="Net Margin %"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return t.blendedMarginPct == null ? "—" : `${num(t.blendedMarginPct, 1)}%`;
+                  })}
+                />
+                <MetricRow
+                  label="Total Contract Profit"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return money(t.termProfit);
+                  })}
+                  highlight
+                />
+
+                {/* Advanced Metrics */}
+                <tr className="bg-purple-500/5 border-t border-white/10">
+                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-purple-300 uppercase tracking-wide">
+                    Advanced Metrics
+                  </td>
+                </tr>
+                <MetricRow
+                  label="Software Revenue"
+                  values={comparedDeals.map((d) => money(calcDealTotals(d).softwareRevenue))}
+                />
+                <MetricRow
+                  label="Services Revenue"
+                  values={comparedDeals.map((d) => money(calcDealTotals(d).servicesRevenue))}
+                />
+                <MetricRow
+                  label="LTV:CAC"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return t.ltvToCac == null ? "—" : num(t.ltvToCac, 2);
+                  })}
+                />
+                <MetricRow
+                  label="Payback (mo)"
+                  values={comparedDeals.map((d) => {
+                    const t = calcDealTotals(d);
+                    return t.paybackMonths == null ? "—" : num(t.paybackMonths, 1);
+                  })}
+                />
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {comparedDeals.length === 0 && deals.length > 0 && (
+        <Card glow="none">
+          <div className="text-center py-12 px-6">
+            <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-400/30">
+              <svg
+                className="w-8 h-8 text-purple-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Select deals to compare
+            </h3>
+            <p className="text-sm text-white/60">
+              Check the boxes above to add deals to the comparison matrix
+            </p>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+type MetricRowProps = {
+  label: string;
+  values: string[];
+  highlight?: boolean;
+};
+
+function MetricRow({ label, values, highlight = false }: MetricRowProps) {
+  return (
+    <tr className={`border-b border-white/5 ${highlight ? "bg-white/5" : ""}`}>
+      <td className="p-3 text-white/70 text-xs font-medium whitespace-nowrap">{label}</td>
+      {values.map((value, index) => (
+        <td
+          key={index}
+          className={`p-3 text-right font-semibold whitespace-nowrap ${highlight ? "text-white" : "text-white/90"}`}
+        >
+          {value}
+        </td>
+      ))}
+    </tr>
+  );
+}
