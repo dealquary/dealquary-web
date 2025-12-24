@@ -4,7 +4,7 @@ import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export const metadata: Metadata = {
-  title: "SaaS Deal Calculator",
+  title: "DealQuary — SaaS Deal Intelligence",
   description: "Multi-deal SaaS subscription calculator (MRR/ARR/Term, discounts, CAC/LTV)."
 };
 

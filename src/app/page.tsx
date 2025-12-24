@@ -23,7 +23,7 @@ export default function Page() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight">
-                SaaS Deal Calculator
+                  DealQuary
               </h1>
               <p className="text-xs text-white/60">
                 Model and compare deal scenarios

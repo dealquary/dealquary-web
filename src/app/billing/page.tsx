@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AppBackground from "@/components/AppBackground";
 
 export default function BillingPage() {
   const { data: session, status } = useSession();
@@ -45,19 +46,45 @@ export default function BillingPage() {
   const isPro = session?.user?.isPro || false;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Upgrade to Pro</h1>
-          <p className="text-lg text-gray-600">
-            Unlock PDF export and access your deals from any device
-          </p>
+    <AppBackground>
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)]">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="secondary"
+                onClick={() => router.push("/")}
+                className="!px-3 !py-1.5 text-sm"
+              >
+                ← Back to App
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-white tracking-tight">
+                  Billing & Subscription
+                </h1>
+                <p className="text-xs text-white/60">
+                  Manage your Pro subscription
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+      </header>
+
+      <div className="min-h-screen py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-white mb-4">Upgrade to Pro</h2>
+            <p className="text-lg text-white/70">
+              Unlock PDF export and access your deals from any device
+            </p>
+          </div>
 
         {isPro ? (
-          <Card glow="cyan">
+          <Card glow="cyan" className="bg-white/10">
             <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-400/30">
                 <svg
                   className="w-8 h-8 text-cyan-400"
                   fill="none"
@@ -84,7 +111,7 @@ export default function BillingPage() {
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {/* Free Plan */}
-            <Card glow="none">
+            <Card glow="none" className="bg-white/8">
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2">Free</h3>
                 <div className="text-3xl font-bold text-white mb-4">$0</div>
@@ -154,7 +181,7 @@ export default function BillingPage() {
             </Card>
 
             {/* Pro Plan */}
-            <Card glow="cyan">
+            <Card glow="cyan" className="bg-white/10">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xl font-bold text-white">Pro</h3>
@@ -247,7 +274,8 @@ export default function BillingPage() {
             </Card>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </AppBackground>
   );
 }
