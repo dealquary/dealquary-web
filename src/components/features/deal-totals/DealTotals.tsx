@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAppStore } from "@/state/store";
 import { Card } from "@/components/ui/Card";
 import { CashFlowChart } from "./CashFlowChart";
@@ -7,33 +8,21 @@ import { calcDealTotals } from "@/lib/calc";
 import { money, num } from "@/lib/format";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import MetricCard, { type MetricStatus } from "@/components/metrics/MetricCard";
+import { evaluateDealHealth } from "@/lib/dealHealth";
+import { ExportDrawer } from "@/components/features/export/ExportDrawer";
 
-type MetricCardProps = {
-  label: string;
-  value: string;
-  subtext?: string;
-  variant?: "default" | "highlight";
-  compact?: boolean;
-};
+// Helper to determine margin status
+function getMarginStatus(marginPct: number | null): { status: MetricStatus; label: string } | null {
+  if (marginPct === null) return null;
 
-function MetricCard({ label, value, subtext, variant = "default", compact = false }: MetricCardProps) {
-  return (
-    <div
-      className={`
-        ${compact ? "p-2" : "p-3"} rounded-lg border
-        ${variant === "highlight"
-          ? "bg-blue-500/10 border-blue-400/30"
-          : "bg-white/5 border-white/10"
-        }
-      `}
-    >
-      <div className={`${compact ? "text-[10px]" : "text-xs"} font-medium text-white/70 mb-1`}>{label}</div>
-      <div className={`${compact ? "text-base" : "text-lg"} font-bold ${variant === "highlight" ? "text-blue-300" : "text-white"}`}>
-        {value}
-      </div>
-      {subtext && <div className="text-xs text-white/60 mt-0.5">{subtext}</div>}
-    </div>
-  );
+  if (marginPct >= 55) {
+    return { status: "success", label: "Strong" };
+  } else if (marginPct >= 40) {
+    return { status: "warning", label: "OK" };
+  } else {
+    return { status: "danger", label: "Low" };
+  }
 }
 
 export default function DealTotals() {
@@ -41,12 +30,20 @@ export default function DealTotals() {
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [showHealthTooltip, setShowHealthTooltip] = useState(false);
+  const [isExportDrawerOpen, setIsExportDrawerOpen] = useState(false);
 
   if (!deal) return null;
 
   const totals = calcDealTotals(deal);
   const isPro = session?.user?.isPro || false;
   const isAuthenticated = status === "authenticated";
+
+  // Calculate margin status
+  const marginStatus = getMarginStatus(totals.blendedMarginPct);
+
+  // Calculate deal health
+  const health = evaluateDealHealth(deal);
 
   const handlePrint = () => {
     if (!isAuthenticated) {
@@ -84,6 +81,15 @@ export default function DealTotals() {
                 </span>
               )}
               <button
+                onClick={() => setIsExportDrawerOpen(true)}
+                className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Export
+              </button>
+              <button
                 onClick={handlePrint}
                 className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-white/70 hover:text-white border border-white/20 rounded-md hover:bg-white/10 transition-colors"
               >
@@ -97,20 +103,95 @@ export default function DealTotals() {
         </div>
 
         <div className="p-3 space-y-3">
+          {/* Deal Health Badge */}
+          <div className="relative">
+            <button
+              onClick={() => setShowHealthTooltip(!showHealthTooltip)}
+              className={`
+                w-full flex items-center justify-between gap-2 p-2.5 rounded-lg border transition-all
+                ${health.status === "strong" ? "bg-green-500/10 border-green-400/30 hover:bg-green-500/15" : ""}
+                ${health.status === "ok" ? "bg-yellow-500/10 border-yellow-400/30 hover:bg-yellow-500/15" : ""}
+                ${health.status === "risky" ? "bg-red-500/10 border-red-400/30 hover:bg-red-500/15" : ""}
+              `}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`
+                  w-2 h-2 rounded-full
+                  ${health.status === "strong" ? "bg-green-400" : ""}
+                  ${health.status === "ok" ? "bg-yellow-400" : ""}
+                  ${health.status === "risky" ? "bg-red-400 animate-pulse" : ""}
+                `} />
+                <span className="text-xs font-semibold text-white">
+                  Deal Health: <span className={`
+                    ${health.status === "strong" ? "text-green-300" : ""}
+                    ${health.status === "ok" ? "text-yellow-300" : ""}
+                    ${health.status === "risky" ? "text-red-300" : ""}
+                  `}>
+                    {health.status === "strong" ? "Strong" : health.status === "ok" ? "OK" : "Risky"}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-white/50">Why?</span>
+                <svg className={`w-3 h-3 text-white/40 transition-transform ${showHealthTooltip ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+
+            {/* Tooltip/Popover */}
+            {showHealthTooltip && (
+              <div className="mt-2 p-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-lg space-y-2">
+                {health.positives.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-semibold text-green-300 mb-1 uppercase tracking-wide">Strengths</div>
+                    <ul className="space-y-1">
+                      {health.positives.map((reason, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-white/70">
+                          <svg className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>{reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {health.concerns.length > 0 && (
+                  <div className={health.positives.length > 0 ? "pt-2 border-t border-white/10" : ""}>
+                    <div className="text-[10px] font-semibold text-yellow-300 mb-1 uppercase tracking-wide">Concerns</div>
+                    <ul className="space-y-1">
+                      {health.concerns.map((reason, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-white/70">
+                          <svg className="w-3 h-3 text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span>{reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* GROUP 1: Core Revenue (The Basics) */}
           <div>
             <div className="text-xs font-semibold text-cyan-300 mb-2 uppercase tracking-wide">Core Revenue</div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <MetricCard label="MRR" value={money(totals.effectiveMRR)} compact />
-                <MetricCard label="ARR" value={money(totals.annualizedRevenue)} compact />
+                <MetricCard label="MRR" value={money(totals.effectiveMRR)} rawValue={totals.effectiveMRR} compact colorType="revenue" />
+                <MetricCard label="ARR" value={money(totals.annualizedRevenue)} rawValue={totals.annualizedRevenue} compact colorType="revenue" />
               </div>
               {totals.termMonths > 1 && (
                 <MetricCard
                   label={`TCV (${totals.termMonths} months)`}
                   value={money(totals.tcv)}
+                  rawValue={totals.tcv}
                   variant="highlight"
                   compact
+                  colorType="revenue"
                 />
               )}
             </div>
@@ -121,20 +202,26 @@ export default function DealTotals() {
             <div className="text-xs font-semibold text-green-300 mb-2 uppercase tracking-wide">Profitability</div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <MetricCard label="Monthly Profit" value={money(totals.monthlyProfit)} compact />
-                <MetricCard label="Annual Profit" value={money(totals.termProfit / (totals.termMonths / 12))} compact />
+                <MetricCard label="Monthly Profit" value={money(totals.monthlyProfit)} rawValue={totals.monthlyProfit} compact colorType="profit" />
+                <MetricCard label="Annual Profit" value={money(totals.termProfit / (totals.termMonths / 12))} rawValue={totals.termProfit / (totals.termMonths / 12)} compact colorType="profit" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <MetricCard
                   label="Net Margin %"
                   value={totals.blendedMarginPct == null ? "—" : `${num(totals.blendedMarginPct, 1)}%`}
+                  rawValue={totals.blendedMarginPct ?? undefined}
                   compact
+                  colorType="profit"
+                  status={marginStatus?.status}
+                  statusLabel={marginStatus?.label}
                 />
                 <MetricCard
                   label={`Total Contract Profit (${totals.termMonths} mo)`}
                   value={money(totals.termProfit)}
+                  rawValue={totals.termProfit}
                   variant="highlight"
                   compact
+                  colorType="profit"
                 />
               </div>
             </div>
@@ -149,8 +236,8 @@ export default function DealTotals() {
               <div className="mb-2">
                 <div className="text-xs text-white/60 mb-1">Revenue Mix</div>
                 <div className="grid grid-cols-2 gap-2">
-                  <MetricCard label="Software" value={money(totals.softwareRevenue)} compact />
-                  <MetricCard label="Services" value={money(totals.servicesRevenue)} compact />
+                  <MetricCard label="Software" value={money(totals.softwareRevenue)} rawValue={totals.softwareRevenue} compact colorType="revenue" />
+                  <MetricCard label="Services" value={money(totals.servicesRevenue)} rawValue={totals.servicesRevenue} compact colorType="revenue" />
                 </div>
               </div>
             )}
@@ -160,11 +247,13 @@ export default function DealTotals() {
               <MetricCard
                 label="LTV:CAC"
                 value={totals.ltvToCac == null ? "—" : num(totals.ltvToCac, 2)}
+                rawValue={totals.ltvToCac ?? undefined}
                 compact
               />
               <MetricCard
                 label="Payback (mo)"
                 value={totals.paybackMonths == null ? "—" : num(totals.paybackMonths, 1)}
+                rawValue={totals.paybackMonths ?? undefined}
                 compact
               />
             </div>
@@ -185,12 +274,18 @@ export default function DealTotals() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span className="text-xs font-medium text-yellow-200">
-                Avg discount {num(totals.avgDiscountDepthPct, 1)}% exceeds floor
+                Avg discount <span className="font-mono">{num(totals.avgDiscountDepthPct, 1)}%</span> exceeds floor
               </span>
             </div>
           )}
         </div>
       </Card>
+
+      {/* Export Drawer */}
+      <ExportDrawer
+        isOpen={isExportDrawerOpen}
+        onClose={() => setIsExportDrawerOpen(false)}
+      />
     </div>
   );
 }

@@ -58,7 +58,7 @@ export type DealToggles = z.infer<typeof DealTogglesSchema>;
 
 export const DealSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string(),
 
   billingCadence: BillingCadenceSchema.default("MONTHLY"),
 

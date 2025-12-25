@@ -1,3 +1,5 @@
+import React from "react";
+
 type Props = {
   children: React.ReactNode;
   glow?: "pink" | "cyan" | "purple" | "none";

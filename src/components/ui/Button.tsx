@@ -1,13 +1,15 @@
 "use client";
 
+import React from "react";
+
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger";
 };
 
 export function Button({ variant = "primary", className = "", ...props }: Props) {
   const base =
-    "px-3 py-2 rounded-xl text-sm font-medium border transition-all duration-200 " +
-    "focus:outline-none focus:ring-2 focus:ring-white/10";
+    "px-3 py-2 md:py-2 min-h-[44px] md:min-h-0 rounded-xl text-sm font-medium border transition-all duration-200 " +
+    "focus:outline-none focus:ring-2 focus:ring-white/10 flex items-center justify-center";
 
   const styles =
     variant === "primary"

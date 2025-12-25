@@ -1,3 +1,5 @@
+import React from "react";
+
 type BadgeProps = {
   children: React.ReactNode;
   variant?: "default" | "primary" | "success" | "warning" | "danger" | "scenario-a" | "scenario-b";

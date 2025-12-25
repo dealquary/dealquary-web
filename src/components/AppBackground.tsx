@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 export default function AppBackground({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#070A12] text-white relative overflow-hidden">

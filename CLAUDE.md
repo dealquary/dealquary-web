@@ -1,68 +1,158 @@
-# Claude Code Instructions — SaaS Deal Calculator (Next.js)
+# Deal Workbench - SaaS Trading Terminal
 
-You are working in a Next.js App Router project with authentication, database, and payments. Follow these rules:
+## Project Overview
 
-## Goals
-- Keep the app fully functional locally with `npm run dev`.
-- All calculations must live in `src/lib/calc.ts` as pure functions.
-- UI must not embed business logic besides calling calc functions.
-- PDF export is a Pro feature requiring Stripe subscription.
+A single-page trading terminal for SaaS deals. Think Bloomberg terminal for software contracts.
 
-## Architecture
-- **Frontend**: Next.js 15 App Router with React 19
-- **State Management**: Zustand store in `src/state/store.ts` for workspace data (localStorage)
-- **Auth**: NextAuth.js with Google provider (database sessions)
-- **Database**: Prisma + PostgreSQL (Neon) for user data, auth, and subscriptions
-- **Payments**: Stripe Checkout for Pro subscriptions
-- **Validation**: Zod schemas in `src/lib/validators.ts`
-- **Formatting**: helpers in `src/lib/format.ts`
+## Core Philosophy
 
-## Implementation Rules
-- TypeScript strict mode.
-- Keep calc.ts pure (no DB, no auth, no side effects).
-- Server-side Pro status checks via NextAuth session.
-- Client-side: use `useSession()` hook for auth state and Pro badge.
-- Gate PDF export based on `session.user.isPro` boolean.
+- **One screen = one truth** - No wizards, no modals, no "Next" buttons
+- **Inputs left, outcomes right** - Always live, always updating
+- **Keyboard-first** - Model a deal without touching the mouse
+- **Financial precision** - MRR ↔ ARR ↔ TCV ↔ Revenue by Year must reconcile
+- **Customer-safe separation** - Internal economics never accidentally leak
 
-## UX Requirements
-- User can create multiple deals, select one, clone, delete.
-- Deal contains products (line items). Add/remove/edit products.
-- Support recurring per-license and one-time products.
-- Support discount mode: percent OR dollars per license (or one-time).
-- Support free months up front at deal-level.
-- Show deal comparison matrix for multiple deals.
-- CAC and Contracted LTV (term-based) + LTV:CAC + Payback months.
-- **Pro Features**: PDF export, device sync (future)
+## Tech Stack
 
-## Authentication & Billing
-- Logged-out users: see "Sign in to Export" on PDF buttons.
-- Logged-in free users: see "Upgrade to Export" → redirect to /billing.
-- Pro users: see "Pro" badge and enabled PDF export.
-- Stripe webhook updates `user.isPro` on subscription events.
+- React 18+ with TypeScript
+- Tailwind CSS for styling
+- Zustand for state management (lightweight, perfect for real-time updates)
+- No backend initially - all calculations client-side
 
-## Testing
-- Add/maintain unit tests for `src/lib/calc.ts` using Vitest.
-- Tests should cover discounts, free months, term months.
-- Do NOT test auth/payments in unit tests (integration tests only if needed).
+## Project Structure
 
-## Guardrails
-- Do NOT modify calculation logic in calc.ts when adding features.
-- Do NOT add heavy UI libraries. Use simple components already included.
-- If you need a new UI primitive, put it under `src/components/ui/`.
-- Keep database migrations in sync using `npx prisma migrate dev`.
+```
+src/
+├── components/
+│   ├── layout/
+│   │   ├── DealWorkbench.tsx      # Main container
+│   │   ├── DealHeader.tsx         # Top sticky header
+│   │   ├── InputColumn.tsx        # Left 60%
+│   │   └── OutcomesPanel.tsx      # Right 40%, sticky
+│   ├── inputs/
+│   │   ├── ProductsTable.tsx      # Primary input - line items
+│   │   ├── LineItemRow.tsx        # Individual row
+│   │   ├── DealShapeEditor.tsx    # Ramp/expansion config
+│   │   └── AssumptionsPanel.tsx   # Collapsible defaults
+│   ├── outcomes/
+│   │   ├── FinancialSummary.tsx   # Big numbers (MRR, ARR, TCV)
+│   │   ├── RevenueTable.tsx       # Year-by-year breakdown
+│   │   └── MiniCharts.tsx         # Run-rate, billings, margin curves
+│   ├── comparison/
+│   │   ├── ComparisonTray.tsx     # A/B/C scenarios
+│   │   └── DeltaHighlights.tsx    # Green/red differences
+│   └── export/
+│       └── ExportDrawer.tsx       # Customer-safe vs Internal
+├── hooks/
+│   ├── useKeyboardShortcuts.ts    # Global keyboard handling
+│   ├── useDealCalculations.ts     # Real-time math engine
+│   └── useClipboardPaste.ts       # Spreadsheet paste parsing
+├── stores/
+│   ├── dealStore.ts               # Main deal state
+│   └── uiStore.ts                 # UI preferences
+├── utils/
+│   ├── calculations.ts            # MRR, ARR, TCV, margin formulas
+│   ├── validation.ts              # Inline validation rules
+│   └── formatters.ts              # Currency, percentage formatting
+└── types/
+    └── deal.ts                    # TypeScript interfaces
+```
 
-## Environment Variables Required
-- `DATABASE_URL`: PostgreSQL connection string (Neon)
-- `GOOGLE_CLIENT_ID`: Google OAuth client ID
-- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
-- `NEXTAUTH_SECRET`: Random secret for NextAuth
-- `NEXTAUTH_URL`: App URL (http://localhost:3000 for dev)
-- `STRIPE_SECRET_KEY`: Stripe secret key
-- `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret
-- `STRIPE_PRICE_ID_PRO_MONTHLY`: Stripe price ID for Pro subscription
-- `NEXT_PUBLIC_APP_URL`: Public app URL (for Stripe redirects)
+## Data Model
 
-## If something is missing
-- Prefer minimal changes that keep the system consistent with existing types.
-- Add types first, then calc, then UI.
-- For auth/billing features, consult existing patterns in `/billing` and `/api/stripe`.
+```typescript
+interface Deal {
+  id: string;
+  dealName: string;
+  customerName?: string;
+  startDate: Date;
+  termMonths: number;          // default: 36
+  billingTerms: 'advance' | 'arrears';
+  currency: string;
+  owner?: string;
+  updatedAt: Date;
+}
+
+interface LineItem {
+  id: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  billingFrequency: 'monthly' | 'quarterly' | 'annual' | 'one-time';
+  discountPercent?: number;
+  costBasis?: number;          // % or $/unit for margin calc
+  startMonth: number;          // default: 1
+  endMonth: number;            // default: termMonths
+}
+
+interface ShapeSchedule {
+  appliesTo: 'all-recurring' | string;  // line item id
+  scheduleType: 'qty_add' | 'qty_multiplier' | 'price_uplift';
+  timeGrain: 'month' | 'quarter' | 'year';
+  valuesByPeriod: Record<number, number>;
+}
+
+interface Scenario {
+  id: string;
+  name: string;                // A, B, C
+  lineItems: LineItem[];
+  shapeSchedules: ShapeSchedule[];
+  assumptionOverrides: Partial<Assumptions>;
+  isBaseline: boolean;
+}
+
+interface Assumptions {
+  grossMarginPercent: number;  // org default
+  implementationCost?: number; // one-time internal
+  salesComp?: number;
+  collectionsDSO?: number;
+  churnProbability?: number;
+}
+
+// Computed (never stored)
+interface ComputedMetrics {
+  mrr: number;
+  arr: number;
+  tcv: number;
+  grossMarginDollars: number;
+  grossMarginPercent: number;
+  paybackMonths?: number;
+  revenueByYear: { year: number; billings: number; recognized: number; gm: number }[];
+  mrrOverTime: { month: number; mrr: number }[];
+}
+```
+
+## Keyboard Shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Add new row | `Enter` (in last row) |
+| Duplicate row | `Cmd/Ctrl + D` |
+| Delete empty row | `Backspace` |
+| Navigate cells | `Tab` / `Shift+Tab` |
+| Cycle scenarios | `Shift+Tab` (in comparison mode) |
+| Switch A/B focus | `Alt+Arrow` |
+| Undo | `Cmd/Ctrl + Z` |
+| Copy internal summary | `Cmd/Ctrl + Shift + C` |
+
+## Validation Rules (Inline, No Popups)
+
+- **Red outline**: Invalid input (non-numeric, negative qty, end < start)
+- **Yellow badge**: Unusual but allowed (e.g., 85% discount)
+- **Auto-normalize**: Billing frequency aligned to start/end boundaries
+- **Reconciliation warnings**: Surface in outcomes panel, never silent
+
+## Implementation Notes
+
+- All calculations happen on every keystroke - use `useMemo` wisely
+- Products table is the centerpiece - optimize for fast data entry
+- Outcomes panel must be sticky and always visible
+- Support paste from Excel/Google Sheets (tab-separated)
+- Customer-safe export must NEVER include: margin, costs, payback, internal notes
+
+## Testing Priorities
+
+1. Calculation accuracy (MRR/ARR/TCV reconciliation)
+2. Keyboard navigation flow
+3. Clipboard paste parsing
+4. Export content separation (customer-safe vs internal)

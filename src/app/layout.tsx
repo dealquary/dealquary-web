@@ -1,7 +1,14 @@
+import React from "react";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Roboto_Mono } from "next/font/google";
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
+});
 
 export const metadata: Metadata = {
   title: "DealQuary — SaaS Deal Intelligence",
@@ -16,7 +23,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={robotoMono.variable}>
       <body className="min-h-screen">
         <ErrorBoundary>
           <SessionProvider>{children}</SessionProvider>

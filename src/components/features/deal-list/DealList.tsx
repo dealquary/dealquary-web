@@ -34,13 +34,13 @@ export default function DealList() {
       </div>
 
       <div className="p-2 space-y-2">
-        {deals.length === 0 ? (
+        {deals.filter(d => d.name.trim().length > 0).length === 0 ? (
           <div className="px-3 py-8 text-center">
             <p className="text-sm text-white/60">No deals yet.</p>
             <p className="text-xs text-white/40 mt-1">Create one to get started</p>
           </div>
         ) : (
-          deals.map((d) => {
+          deals.filter(d => d.name.trim().length > 0).map((d) => {
             const active = d.id === selectedDealId;
             return (
               <div

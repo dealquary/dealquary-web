@@ -9,6 +9,16 @@ import { money, num } from "@/lib/format";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+// Helper to find the index of the best (highest) value in an array of numeric strings
+function findBestValueIndex(values: string[]): number {
+  const nums = values.map((v) => {
+    const cleaned = v.replace(/[$,%,—]/g, "").trim();
+    return cleaned === "" ? -Infinity : parseFloat(cleaned);
+  });
+  const max = Math.max(...nums);
+  return nums.findIndex((n) => n === max);
+}
+
 export default function ComparisonMatrix() {
   const deals = useAppStore((s) => s.deals);
   const comparedDealIds = useAppStore((s) => s.comparedDealIds);
@@ -20,6 +30,7 @@ export default function ComparisonMatrix() {
   const comparedDeals = deals.filter((d) => comparedDealIds.includes(d.id));
   const isPro = session?.user?.isPro || false;
   const isAuthenticated = status === "authenticated";
+  const isTwoWayComparison = comparedDeals.length === 2;
 
   const handlePrint = () => {
     if (!isAuthenticated) {
@@ -35,39 +46,31 @@ export default function ComparisonMatrix() {
 
   return (
     <div className="space-y-4">
-      {/* Deal Selection */}
+      {/* Deal Selection - Compact */}
       <Card glow="purple">
-        <div className="p-3 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-white">Select Deals to Compare</h2>
-              <p className="text-xs text-white/60 mt-0.5">
-                {comparedDealIds.length} {comparedDealIds.length === 1 ? "deal" : "deals"} selected
-              </p>
-            </div>
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold text-white">
+              Select Deals ({comparedDealIds.length} selected)
+            </h2>
             {comparedDealIds.length > 0 && (
               <Button variant="secondary" onClick={clearComparedDeals} className="!text-xs !py-1 !px-2">
                 Clear All
               </Button>
             )}
           </div>
-        </div>
 
-        <div className="p-3">
           {deals.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-white/60">No deals available.</p>
-              <p className="text-xs text-white/40 mt-1">Create deals to compare them</p>
-            </div>
+            <p className="text-xs text-white/40 text-center py-2">No deals available</p>
           ) : (
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
               {deals.map((deal) => {
                 const isSelected = comparedDealIds.includes(deal.id);
                 return (
                   <label
                     key={deal.id}
                     className={`
-                      flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer
+                      inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all cursor-pointer
                       ${isSelected
                         ? "border-purple-400/50 bg-purple-500/10"
                         : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
@@ -78,16 +81,12 @@ export default function ComparisonMatrix() {
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleComparedDeal(deal.id)}
-                      className="w-4 h-4 text-purple-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-purple-500"
+                      className="w-3.5 h-3.5 text-purple-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-purple-500"
                     />
-                    <div className="flex-1">
-                      <div className="font-medium text-white text-sm">{deal.name}</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge size="sm" variant="default">
-                          {deal.products.length} {deal.products.length === 1 ? "product" : "products"}
-                        </Badge>
-                      </div>
-                    </div>
+                    <span className="text-xs font-medium text-white">{deal.name}</span>
+                    <Badge size="sm" variant="default">
+                      {deal.products.length}
+                    </Badge>
                   </label>
                 );
               })}
@@ -128,12 +127,13 @@ export default function ComparisonMatrix() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="text-sm">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="text-sm w-full">
               <thead>
                 <tr className="border-b border-white/10">
                   <th className="text-left p-3 font-semibold text-white/70 text-xs uppercase tracking-wide whitespace-nowrap">
-                    Deal Name
+                    Metric
                   </th>
                   {comparedDeals.map((deal) => (
                     <th
@@ -143,22 +143,31 @@ export default function ComparisonMatrix() {
                       {deal.name}
                     </th>
                   ))}
+                  {isTwoWayComparison && (
+                    <th className="text-right p-3 font-semibold text-purple-300 text-sm whitespace-nowrap">
+                      Difference
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {/* Core Revenue */}
                 <tr className="bg-cyan-500/5">
-                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-cyan-300 uppercase tracking-wide">
+                  <td colSpan={comparedDeals.length + 1 + (isTwoWayComparison ? 1 : 0)} className="p-2 text-xs font-semibold text-cyan-300 uppercase tracking-wide">
                     Core Revenue
                   </td>
                 </tr>
                 <MetricRow
                   label="MRR"
                   values={comparedDeals.map((d) => money(calcDealTotals(d).effectiveMRR))}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={0}
                 />
                 <MetricRow
                   label="ARR"
                   values={comparedDeals.map((d) => money(calcDealTotals(d).annualizedRevenue))}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={1}
                 />
                 <MetricRow
                   label="TCV (Total Contract Value)"
@@ -167,17 +176,21 @@ export default function ComparisonMatrix() {
                     return money(t.tcv);
                   })}
                   highlight
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={2}
                 />
 
                 {/* Profitability */}
                 <tr className="bg-green-500/5 border-t border-white/10">
-                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-green-300 uppercase tracking-wide">
+                  <td colSpan={comparedDeals.length + 1 + (isTwoWayComparison ? 1 : 0)} className="p-2 text-xs font-semibold text-green-300 uppercase tracking-wide">
                     Profitability
                   </td>
                 </tr>
                 <MetricRow
                   label="Monthly Profit"
                   values={comparedDeals.map((d) => money(calcDealTotals(d).monthlyProfit))}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={3}
                 />
                 <MetricRow
                   label="Annual Profit"
@@ -185,6 +198,8 @@ export default function ComparisonMatrix() {
                     const t = calcDealTotals(d);
                     return money(t.termProfit / (t.termMonths / 12));
                   })}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={4}
                 />
                 <MetricRow
                   label="Net Margin %"
@@ -192,6 +207,8 @@ export default function ComparisonMatrix() {
                     const t = calcDealTotals(d);
                     return t.blendedMarginPct == null ? "—" : `${num(t.blendedMarginPct, 1)}%`;
                   })}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={5}
                 />
                 <MetricRow
                   label="Total Contract Profit"
@@ -200,21 +217,27 @@ export default function ComparisonMatrix() {
                     return money(t.termProfit);
                   })}
                   highlight
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={6}
                 />
 
                 {/* Advanced Metrics */}
                 <tr className="bg-purple-500/5 border-t border-white/10">
-                  <td colSpan={comparedDeals.length + 1} className="p-2 text-xs font-semibold text-purple-300 uppercase tracking-wide">
+                  <td colSpan={comparedDeals.length + 1 + (isTwoWayComparison ? 1 : 0)} className="p-2 text-xs font-semibold text-purple-300 uppercase tracking-wide">
                     Advanced Metrics
                   </td>
                 </tr>
                 <MetricRow
                   label="Software Revenue"
                   values={comparedDeals.map((d) => money(calcDealTotals(d).softwareRevenue))}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={7}
                 />
                 <MetricRow
                   label="Services Revenue"
                   values={comparedDeals.map((d) => money(calcDealTotals(d).servicesRevenue))}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={8}
                 />
                 <MetricRow
                   label="LTV:CAC"
@@ -222,6 +245,8 @@ export default function ComparisonMatrix() {
                     const t = calcDealTotals(d);
                     return t.ltvToCac == null ? "—" : num(t.ltvToCac, 2);
                   })}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={9}
                 />
                 <MetricRow
                   label="Payback (mo)"
@@ -229,9 +254,64 @@ export default function ComparisonMatrix() {
                     const t = calcDealTotals(d);
                     return t.paybackMonths == null ? "—" : num(t.paybackMonths, 1);
                   })}
+                  isTwoWayComparison={isTwoWayComparison}
+                  rowIndex={10}
                 />
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="md:hidden p-3 space-y-3">
+            {comparedDeals.map((deal) => {
+              const totals = calcDealTotals(deal);
+              return (
+                <div key={deal.id} className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
+                  {/* Deal Name Header */}
+                  <div className="pb-2 border-b border-white/10">
+                    <h3 className="text-base font-bold text-white">{deal.name}</h3>
+                    <p className="text-xs text-white/60 mt-0.5">
+                      {deal.products.length} {deal.products.length === 1 ? "product" : "products"}
+                    </p>
+                  </div>
+
+                  {/* Core Revenue */}
+                  <div>
+                    <div className="text-xs font-semibold text-cyan-300 mb-2 uppercase tracking-wide">Core Revenue</div>
+                    <div className="space-y-1.5">
+                      <MobileMetricRow label="MRR" value={money(totals.effectiveMRR)} />
+                      <MobileMetricRow label="ARR" value={money(totals.annualizedRevenue)} />
+                      <MobileMetricRow label="TCV" value={money(totals.tcv)} highlight />
+                    </div>
+                  </div>
+
+                  {/* Profitability */}
+                  <div className="pt-2 border-t border-white/10">
+                    <div className="text-xs font-semibold text-green-300 mb-2 uppercase tracking-wide">Profitability</div>
+                    <div className="space-y-1.5">
+                      <MobileMetricRow label="Monthly Profit" value={money(totals.monthlyProfit)} />
+                      <MobileMetricRow label="Annual Profit" value={money(totals.termProfit / (totals.termMonths / 12))} />
+                      <MobileMetricRow
+                        label="Net Margin %"
+                        value={totals.blendedMarginPct == null ? "—" : `${num(totals.blendedMarginPct, 1)}%`}
+                      />
+                      <MobileMetricRow label="Total Contract Profit" value={money(totals.termProfit)} highlight />
+                    </div>
+                  </div>
+
+                  {/* Advanced Metrics */}
+                  <div className="pt-2 border-t border-white/10">
+                    <div className="text-xs font-semibold text-purple-300 mb-2 uppercase tracking-wide">Advanced Metrics</div>
+                    <div className="space-y-1.5">
+                      <MobileMetricRow label="Software Revenue" value={money(totals.softwareRevenue)} />
+                      <MobileMetricRow label="Services Revenue" value={money(totals.servicesRevenue)} />
+                      <MobileMetricRow label="LTV:CAC" value={totals.ltvToCac == null ? "—" : num(totals.ltvToCac, 2)} />
+                      <MobileMetricRow label="Payback (mo)" value={totals.paybackMonths == null ? "—" : num(totals.paybackMonths, 1)} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Card>
       )}
@@ -272,20 +352,70 @@ type MetricRowProps = {
   label: string;
   values: string[];
   highlight?: boolean;
+  isTwoWayComparison?: boolean;
+  rowIndex?: number;
 };
 
-function MetricRow({ label, values, highlight = false }: MetricRowProps) {
+function MetricRow({ label, values, highlight = false, isTwoWayComparison = false, rowIndex = 0 }: MetricRowProps) {
+  const bestIndex = findBestValueIndex(values);
+
+  // Calculate difference for 2-way comparison
+  let difference = "";
+  if (isTwoWayComparison && values.length === 2) {
+    const val1 = parseFloat(values[0].replace(/[$,%,—]/g, "").trim());
+    const val2 = parseFloat(values[1].replace(/[$,%,—]/g, "").trim());
+    if (!isNaN(val1) && !isNaN(val2)) {
+      const diff = val2 - val1;
+      const isPercent = values[0].includes('%');
+      if (isPercent) {
+        difference = `${diff > 0 ? '+' : ''}${num(diff, 1)}%`;
+      } else {
+        difference = `${diff > 0 ? '+' : ''}${money(diff)}`;
+      }
+    }
+  }
+
+  // Zebra striping - alternate between transparent and subtle background
+  const zebraClass = rowIndex % 2 === 0 ? "" : "bg-white/[0.02]";
+
   return (
-    <tr className={`border-b border-white/5 ${highlight ? "bg-white/5" : ""}`}>
+    <tr className={`border-b border-white/5 ${zebraClass} ${highlight ? "bg-white/5" : ""}`}>
       <td className="p-3 text-white/70 text-xs font-medium whitespace-nowrap">{label}</td>
-      {values.map((value, index) => (
-        <td
-          key={index}
-          className={`p-3 text-right font-semibold whitespace-nowrap ${highlight ? "text-white" : "text-white/90"}`}
-        >
-          {value}
+      {values.map((value, index) => {
+        const isBest = index === bestIndex;
+        return (
+          <td
+            key={index}
+            className={`
+              p-3 text-right font-semibold font-mono whitespace-nowrap
+              ${highlight ? "text-white" : "text-white/90"}
+              ${isBest ? "border-l-4 border-green-400 bg-green-500/10" : ""}
+            `}
+          >
+            {value}
+          </td>
+        );
+      })}
+      {isTwoWayComparison && (
+        <td className="p-3 text-right font-semibold font-mono whitespace-nowrap text-purple-300">
+          {difference}
         </td>
-      ))}
+      )}
     </tr>
+  );
+}
+
+type MobileMetricRowProps = {
+  label: string;
+  value: string;
+  highlight?: boolean;
+};
+
+function MobileMetricRow({ label, value, highlight = false }: MobileMetricRowProps) {
+  return (
+    <div className={`flex items-center justify-between py-2 px-3 rounded-lg ${highlight ? "bg-white/10" : "bg-white/5"}`}>
+      <span className="text-xs text-white/70 font-medium">{label}</span>
+      <span className={`text-sm font-bold font-mono ${highlight ? "text-white" : "text-white/90"}`}>{value}</span>
+    </div>
   );
 }

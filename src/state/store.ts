@@ -18,6 +18,7 @@ type AppState = Workspace & {
   updateDeal: (dealId: string, patch: Partial<Deal>) => void;
 
   addProduct: (dealId: string, type: Product["type"]) => void;
+  duplicateProduct: (dealId: string, productId: string) => void;
   updateProduct: (dealId: string, productId: string, patch: Partial<Product>) => void;
   removeProduct: (dealId: string, productId: string) => void;
 
@@ -42,7 +43,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const newDeal: Deal = DealSchema.parse({
         id: uid("deal"),
-        name: `Deal ${get().deals.length + 1}`,
+        name: "",
         billingCadence: "MONTHLY",
         contractLengthType: "YEARS",
         contractYears: 1,
@@ -171,7 +172,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const base: Partial<Product> =
         type === "RECURRING"
-          ? { type, licenses: 1, listPricePerUnitMonthly: 100, name: "New recurring product" }
+          ? { type, licenses: 100, listPricePerUnitMonthly: 10, name: "New recurring product" }
           : { type, oneTimeListPrice: 5000, name: "New one-time product" };
 
       const newProduct: Product = ProductSchema.parse({
@@ -207,6 +208,49 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
     } catch (error) {
       console.error("Failed to add product:", error);
+    }
+  },
+
+  duplicateProduct: (dealId, productId) => {
+    try {
+      const deal = get().deals.find((d) => d.id === dealId);
+      if (!deal) return;
+
+      const product = deal.products.find((p) => p.id === productId);
+      if (!product) return;
+
+      const duplicated: Product = ProductSchema.parse({
+        ...product,
+        id: uid("prod"),
+        name: `${product.name} (Copy)`
+      });
+
+      set((s) => {
+        const deals = s.deals.map((d) => {
+          if (d.id !== dealId) return d;
+          const productIndex = d.products.findIndex((p) => p.id === productId);
+          const products = [
+            ...d.products.slice(0, productIndex + 1),
+            duplicated,
+            ...d.products.slice(productIndex + 1)
+          ];
+          return DealSchema.parse({ ...d, products });
+        });
+
+        const next = WorkspaceSchema.parse({
+          version: s.version,
+          selectedDealId: s.selectedDealId,
+          comparedDealIds: s.comparedDealIds,
+          deals
+        });
+        saveWorkspace(next);
+        return {
+          ...s,
+          ...next
+        };
+      });
+    } catch (error) {
+      console.error("Failed to duplicate product:", error);
     }
   },
 

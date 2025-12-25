@@ -1,10 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function BillingSuccessPage() {
   const { data: session, update } = useSession();

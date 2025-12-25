@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import ProductTable from "./ProductTable";
+import DealShapeBar from "@/components/deal/DealShapeBar";
 import { useAppStore } from "@/state/store";
 
 export default function DealEditor() {
-  const [showAdvancedTerms, setShowAdvancedTerms] = useState(false);
   const selectedDealId = useAppStore((s) => s.selectedDealId);
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
   const updateDeal = useAppStore((s) => s.updateDeal);
 
   // Local state for deal name to allow clearing without validation errors
   const [localName, setLocalName] = useState<string | null>(null);
+  const [showAdvancedGuardrails, setShowAdvancedGuardrails] = useState(false);
 
   if (!deal || !selectedDealId) return null;
 
@@ -22,261 +22,272 @@ export default function DealEditor() {
   const displayName = localName !== null ? localName : deal.name;
 
   return (
-    <div className="space-y-3">
-      {/* Deal Name Header */}
+    <div className="space-y-4">
+      {/* Deal Header */}
       <Card glow="none">
-        <div className="p-3">
+        <div className="p-4">
           <Input
             value={displayName}
             onChange={(e) => {
-              // Update local state immediately for smooth UX
               setLocalName(e.target.value);
             }}
             onBlur={(e) => {
               const trimmed = e.target.value.trim();
               const finalName = trimmed.length > 0 ? trimmed : "Untitled Deal";
               updateDeal(selectedDealId, { name: finalName });
-              setLocalName(null); // Clear local state after saving
+              setLocalName(null);
             }}
             onKeyDown={(e) => {
-              // Save on Enter key
               if (e.key === "Enter") {
                 e.currentTarget.blur();
               }
             }}
-            className="text-lg font-bold border-0 !px-0 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
-            placeholder="Deal name..."
+            className="text-xl font-bold border-0 !px-0 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
+            placeholder="Deal Name"
           />
         </div>
       </Card>
 
-      {/* Product Table - At the TOP */}
+      {/* Deal Shape */}
+      <Card glow="none">
+        <div className="p-4">
+          <h3 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wide">Deal Shape</h3>
+          <DealShapeBar
+            deal={deal}
+            onUpdate={(patch) => updateDeal(selectedDealId, patch)}
+          />
+        </div>
+      </Card>
+
+      {/* Products Table - Centerpiece */}
       <ProductTable dealId={selectedDealId} />
 
-      {/* Deal Settings - Contract Details */}
+      {/* Advanced Guardrails - Collapsible */}
       <Card glow="none">
-        <div className="p-3 border-b border-white/10">
-          <h2 className="text-sm font-semibold text-white">Contract Details</h2>
-        </div>
-
-        <div className="p-3 space-y-3">
-          {/* Billing & Contract */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Select
-              label="Billing cadence"
-              value={deal.billingCadence}
-              onChange={(e) => {
-                const value = e.target.value as "MONTHLY" | "ANNUAL_PREPAY";
-                updateDeal(selectedDealId, { billingCadence: value });
-              }}
+        <div className="p-4">
+          <button
+            onClick={() => setShowAdvancedGuardrails(!showAdvancedGuardrails)}
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                Advanced Guardrails
+              </h3>
+              <p className="text-xs text-white/60 mt-0.5">
+                {showAdvancedGuardrails ? "Click to collapse" : "CAC, free months, ramp periods & more"}
+              </p>
+            </div>
+            <svg
+              className={`w-5 h-5 text-white/60 transition-transform ${showAdvancedGuardrails ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <option value="MONTHLY">Monthly</option>
-              <option value="ANNUAL_PREPAY">Annual (prepay)</option>
-            </Select>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-            <Select
-              label="Contract length"
-              value={deal.contractLengthType}
-              onChange={(e) => {
-                const value = e.target.value as "MONTH_TO_MONTH" | "MONTHS" | "YEARS";
-                updateDeal(selectedDealId, { contractLengthType: value });
-              }}
-            >
-              <option value="MONTH_TO_MONTH">Month-to-month</option>
-              <option value="MONTHS">Fixed months</option>
-              <option value="YEARS">Fixed years</option>
-            </Select>
-
-            {deal.contractLengthType === "MONTHS" ? (
-              <Input
-                label="Duration"
-                type="number"
-                min="1"
-                value={deal.contractMonths}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val >= 1) updateDeal(selectedDealId, { contractMonths: val });
-                }}
-              />
-            ) : deal.contractLengthType === "YEARS" ? (
-              <Input
-                label="Duration"
-                type="number"
-                min="1"
-                value={deal.contractYears}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  if (val >= 1) updateDeal(selectedDealId, { contractYears: val });
-                }}
-              />
-            ) : (
-              <div className="flex items-end pb-2">
-                <p className="text-sm text-white/60 italic">Month-to-month = 1 month</p>
-              </div>
-            )}
-          </div>
-
-          {/* Advanced Deal Terms Toggle */}
-          <div className="pt-2 border-t border-white/10">
-            <button
-              onClick={() => setShowAdvancedTerms(!showAdvancedTerms)}
-              className="text-xs text-cyan-300 hover:text-cyan-200 font-medium flex items-center gap-1"
-            >
-              {showAdvancedTerms ? "Hide" : "Show"} Advanced Deal Terms
-              <svg
-                className={`w-3 h-3 transition-transform ${showAdvancedTerms ? "rotate-180" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {showAdvancedTerms && (
-              <div className="mt-3 space-y-3">
-                {/* Free Months */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={deal.toggles.includeFreeMonths}
-                        onChange={(e) =>
-                          updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeFreeMonths: e.target.checked } })
-                        }
-                        className="w-4 h-4 text-blue-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-blue-500"
+          {showAdvancedGuardrails && (
+            <div className="mt-4 space-y-3">
+              {/* 2x2 Grid of Toggle Panels */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Panel 1: Customer Acquisition Cost */}
+                <div className={`rounded-lg border transition-all ${deal.toggles.includeCAC ? 'bg-green-500/10 border-green-400/30' : 'bg-white/5 border-white/10'}`}>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-semibold text-white">Customer Acquisition Cost</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={deal.toggles.includeCAC}
+                          onChange={(e) =>
+                            updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeCAC: e.target.checked } })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-white/20 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                    {deal.toggles.includeCAC ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        value={deal.cac}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 0) updateDeal(selectedDealId, { cac: val });
+                        }}
+                        className="font-mono"
+                        placeholder="e.g., 12500"
                       />
-                      <span className="text-sm font-medium text-white">Include free months up front</span>
-                    </label>
-                  </div>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={deal.freeMonthsUpFront}
-                    disabled={!deal.toggles.includeFreeMonths}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (val >= 0) updateDeal(selectedDealId, { freeMonthsUpFront: val });
-                    }}
-                  />
-                </div>
-
-                {/* CAC */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={deal.toggles.includeCAC}
-                        onChange={(e) =>
-                          updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeCAC: e.target.checked } })
-                        }
-                        className="w-4 h-4 text-blue-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-white">Include Customer Acquisition Cost (CAC)</span>
-                    </label>
-                  </div>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={deal.cac}
-                    disabled={!deal.toggles.includeCAC}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (val >= 0) updateDeal(selectedDealId, { cac: val });
-                    }}
-                  />
-                </div>
-
-                {/* Discount Floor */}
-                <div>
-                  <Input
-                    label="Discount floor warning (%)"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={deal.discountFloorPct}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (val >= 0 && val <= 100) updateDeal(selectedDealId, { discountFloorPct: val });
-                    }}
-                  />
-                </div>
-
-                {/* Ramp Period */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={deal.toggles.includeRamp}
-                        onChange={(e) =>
-                          updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeRamp: e.target.checked } })
-                        }
-                        className="w-4 h-4 text-blue-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-medium text-white">Include ramp/onboarding period</span>
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Input
-                      label="Ramp months"
-                      type="number"
-                      min="0"
-                      value={deal.rampMonths}
-                      disabled={!deal.toggles.includeRamp}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (val >= 0) updateDeal(selectedDealId, { rampMonths: val });
-                      }}
-                    />
-                    <Input
-                      label="Ramp discount (%)"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={deal.rampDiscountPct}
-                      disabled={!deal.toggles.includeRamp}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (val >= 0 && val <= 100) updateDeal(selectedDealId, { rampDiscountPct: val });
-                      }}
-                    />
+                    ) : (
+                      <p className="text-xs text-white/50 italic">Track the cost to acquire this customer and calculate LTV:CAC ratio</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Annual Escalation */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={deal.toggles.includeEscalation}
-                        onChange={(e) =>
-                          updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeEscalation: e.target.checked } })
-                        }
-                        className="w-4 h-4 text-blue-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-blue-500"
+                {/* Panel 2: Free Months Up Front */}
+                <div className={`rounded-lg border transition-all ${deal.toggles.includeFreeMonths ? 'bg-blue-500/10 border-blue-400/30' : 'bg-white/5 border-white/10'}`}>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-semibold text-white">Free Months Up Front</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={deal.toggles.includeFreeMonths}
+                          onChange={(e) =>
+                            updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeFreeMonths: e.target.checked } })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-white/20 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                      </label>
+                    </div>
+                    {deal.toggles.includeFreeMonths ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        value={deal.freeMonthsUpFront}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 0) updateDeal(selectedDealId, { freeMonthsUpFront: val });
+                        }}
+                        className="font-mono"
+                        placeholder="e.g., 2"
                       />
-                      <span className="text-sm font-medium text-white">Include year-over-year escalation</span>
-                    </label>
+                    ) : (
+                      <p className="text-xs text-white/50 italic">Offer complimentary months at the beginning of the contract</p>
+                    )}
                   </div>
-                  <Input
-                    label="Annual escalator (%)"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={deal.annualEscalatorPct}
-                    disabled={!deal.toggles.includeEscalation}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      if (val >= 0 && val <= 100) updateDeal(selectedDealId, { annualEscalatorPct: val });
-                    }}
-                  />
+                </div>
+
+                {/* Panel 3: Ramp/Onboarding Period */}
+                <div className={`rounded-lg border transition-all ${deal.toggles.includeRamp ? 'bg-purple-500/10 border-purple-400/30' : 'bg-white/5 border-white/10'}`}>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span className="text-sm font-semibold text-white">Ramp/Onboarding Period</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={deal.toggles.includeRamp}
+                          onChange={(e) =>
+                            updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeRamp: e.target.checked } })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-white/20 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500"></div>
+                      </label>
+                    </div>
+                    {deal.toggles.includeRamp ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          label="Months"
+                          type="number"
+                          min="0"
+                          value={deal.rampMonths}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0) updateDeal(selectedDealId, { rampMonths: val });
+                          }}
+                          className="font-mono"
+                          placeholder="e.g., 3"
+                        />
+                        <Input
+                          label="Discount %"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={deal.rampDiscountPct}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0 && val <= 100) updateDeal(selectedDealId, { rampDiscountPct: val });
+                          }}
+                          className="font-mono"
+                          placeholder="e.g., 50"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-white/50 italic">Apply discounted pricing during implementation or onboarding phase</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Panel 4: Year-over-Year Escalation */}
+                <div className={`rounded-lg border transition-all ${deal.toggles.includeEscalation ? 'bg-orange-500/10 border-orange-400/30' : 'bg-white/5 border-white/10'}`}>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span className="text-sm font-semibold text-white">Year-over-Year Escalation</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={deal.toggles.includeEscalation}
+                          onChange={(e) =>
+                            updateDeal(selectedDealId, { toggles: { ...deal.toggles, includeEscalation: e.target.checked } })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-white/20 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+                    {deal.toggles.includeEscalation ? (
+                      <Input
+                        label="Annual %"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={deal.annualEscalatorPct}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 0 && val <= 100) updateDeal(selectedDealId, { annualEscalatorPct: val });
+                        }}
+                        className="font-mono"
+                        placeholder="e.g., 5"
+                      />
+                    ) : (
+                      <p className="text-xs text-white/50 italic">Automatically increase pricing each year of multi-year contracts</p>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Discount Floor (standalone, always visible) */}
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <Input
+                  label="Discount Safety Net (%)"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={deal.discountFloorPct}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= 0 && val <= 100) updateDeal(selectedDealId, { discountFloorPct: val });
+                  }}
+                  className="font-mono"
+                  placeholder="e.g., 20"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     </div>
