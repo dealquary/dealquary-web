@@ -42,7 +42,7 @@ export default function DealEditor() {
                 e.currentTarget.blur();
               }
             }}
-            className="text-xl font-bold border-0 !px-0 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
+            className="text-xl font-bold border-0 px-2 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
             placeholder="Deal Name"
           />
         </div>

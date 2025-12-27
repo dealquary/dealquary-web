@@ -19,6 +19,9 @@ type ProductRowCardProps = {
 
 export default function ProductRowCard({ product: p, deal, dealId, index, isLast }: ProductRowCardProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [localName, setLocalName] = useState<string | null>(null);
+  const [localPrice, setLocalPrice] = useState<string | null>(null);
+  const [localLicenses, setLocalLicenses] = useState<string | null>(null);
   const updateProduct = useAppStore((s) => s.updateProduct);
   const removeProduct = useAppStore((s) => s.removeProduct);
   const duplicateProduct = useAppStore((s) => s.duplicateProduct);
@@ -65,12 +68,15 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
         {/* Product Name */}
         <div className="flex-1 min-w-0">
           <Input
-            value={p.name}
+            value={localName !== null ? localName : p.name}
             onChange={(e) => {
-              const newName = e.target.value;
-              if (newName.trim().length > 0) {
-                updateProduct(dealId, p.id, { name: newName });
-              }
+              setLocalName(e.target.value);
+            }}
+            onBlur={(e) => {
+              const trimmed = e.target.value.trim();
+              const finalName = trimmed.length > 0 ? trimmed : (p.type === "RECURRING" ? "Unnamed Product" : "Unnamed Service");
+              updateProduct(dealId, p.id, { name: finalName });
+              setLocalName(null);
             }}
             placeholder={p.type === "RECURRING" ? "SentinelOne Control" : "Onboarding & Setup"}
             className="text-sm border-0 !px-2 !py-1 !bg-transparent !ring-0 hover:!bg-white/5 font-medium"
@@ -84,12 +90,17 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
               type="number"
               min="0"
               step="0.01"
-              value={p.listPricePerUnitMonthly}
+              value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
               onChange={(e) => {
-                const val = Number(e.target.value);
-                if (val >= 0) updateProduct(dealId, p.id, { listPricePerUnitMonthly: val });
+                setLocalPrice(e.target.value);
               }}
-              className="text-sm font-mono !px-2 !py-1 text-right"
+              onBlur={(e) => {
+                const val = Number(e.target.value);
+                const finalVal = val >= 0 ? val : 0;
+                updateProduct(dealId, p.id, { listPricePerUnitMonthly: finalVal });
+                setLocalPrice(null);
+              }}
+              className="text-sm font-mono !pl-2 !pr-1 !py-1 text-right"
               placeholder="$49/mo"
             />
           ) : (
@@ -97,12 +108,17 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
               type="number"
               min="0"
               step="0.01"
-              value={p.oneTimeListPrice}
+              value={localPrice !== null ? localPrice : p.oneTimeListPrice}
               onChange={(e) => {
-                const val = Number(e.target.value);
-                if (val >= 0) updateProduct(dealId, p.id, { oneTimeListPrice: val });
+                setLocalPrice(e.target.value);
               }}
-              className="text-sm font-mono !px-2 !py-1 text-right"
+              onBlur={(e) => {
+                const val = Number(e.target.value);
+                const finalVal = val >= 0 ? val : 0;
+                updateProduct(dealId, p.id, { oneTimeListPrice: finalVal });
+                setLocalPrice(null);
+              }}
+              className="text-sm font-mono !pl-2 !pr-1 !py-1 text-right"
               placeholder="$5000"
             />
           )}
@@ -114,12 +130,17 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
             <Input
               type="number"
               min="1"
-              value={p.licenses}
+              value={localLicenses !== null ? localLicenses : p.licenses}
               onChange={(e) => {
-                const val = Number(e.target.value);
-                if (val >= 1) updateProduct(dealId, p.id, { licenses: val });
+                setLocalLicenses(e.target.value);
               }}
-              className="text-sm font-mono !px-2 !py-1 text-right"
+              onBlur={(e) => {
+                const val = Number(e.target.value);
+                const finalVal = val >= 1 ? val : 1;
+                updateProduct(dealId, p.id, { licenses: finalVal });
+                setLocalLicenses(null);
+              }}
+              className="text-sm font-mono !pl-2 !pr-1 !py-1 text-right"
               placeholder="50"
             />
           </div>

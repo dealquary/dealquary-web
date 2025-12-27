@@ -5,6 +5,15 @@ import React from "react";
 type Props = React.InputHTMLAttributes<HTMLInputElement> & { label?: string };
 
 export function Input({ label, className = "", ...props }: Props) {
+  // Auto-select all text on focus for number inputs (common UX pattern)
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (props.type === "number") {
+      e.target.select();
+    }
+    // Call user-provided onFocus if exists
+    props.onFocus?.(e);
+  };
+
   return (
     <label className="block space-y-1">
       {label ? <span className="text-xs text-white/70">{label}</span> : null}
@@ -17,6 +26,7 @@ export function Input({ label, className = "", ...props }: Props) {
           className
         ].join(" ")}
         {...props}
+        onFocus={handleFocus}
       />
     </label>
   );
