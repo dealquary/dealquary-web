@@ -66,6 +66,7 @@ export default function DealShapeBar({ deal, onUpdate }: DealShapeBarProps) {
                 const val = Number(e.target.value);
                 if (val >= 1) onUpdate({ contractMonths: val });
               }}
+              className="!pr-3"
             />
           ) : deal.contractLengthType === "YEARS" ? (
             <Input
@@ -77,6 +78,7 @@ export default function DealShapeBar({ deal, onUpdate }: DealShapeBarProps) {
                 const val = Number(e.target.value);
                 if (val >= 1) onUpdate({ contractYears: val });
               }}
+              className="!pr-3"
             />
           ) : (
             <div className="flex items-end pb-2">

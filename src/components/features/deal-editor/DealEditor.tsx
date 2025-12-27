@@ -122,7 +122,7 @@ export default function DealEditor() {
                           const val = Number(e.target.value);
                           if (val >= 0) updateDeal(selectedDealId, { cac: val });
                         }}
-                        className="font-mono"
+                        className="font-mono !pr-3"
                         placeholder="e.g., 12500"
                       />
                     ) : (
@@ -162,7 +162,7 @@ export default function DealEditor() {
                           const val = Number(e.target.value);
                           if (val >= 0) updateDeal(selectedDealId, { freeMonthsUpFront: val });
                         }}
-                        className="font-mono"
+                        className="font-mono !pr-3"
                         placeholder="e.g., 2"
                       />
                     ) : (
@@ -204,7 +204,7 @@ export default function DealEditor() {
                             const val = Number(e.target.value);
                             if (val >= 0) updateDeal(selectedDealId, { rampMonths: val });
                           }}
-                          className="font-mono"
+                          className="font-mono !pr-3"
                           placeholder="e.g., 3"
                         />
                         <Input
@@ -217,7 +217,7 @@ export default function DealEditor() {
                             const val = Number(e.target.value);
                             if (val >= 0 && val <= 100) updateDeal(selectedDealId, { rampDiscountPct: val });
                           }}
-                          className="font-mono"
+                          className="font-mono !pr-3"
                           placeholder="e.g., 50"
                         />
                       </div>
@@ -260,7 +260,7 @@ export default function DealEditor() {
                           const val = Number(e.target.value);
                           if (val >= 0 && val <= 100) updateDeal(selectedDealId, { annualEscalatorPct: val });
                         }}
-                        className="font-mono"
+                        className="font-mono !pr-3"
                         placeholder="e.g., 5"
                       />
                     ) : (
@@ -282,7 +282,7 @@ export default function DealEditor() {
                     const val = Number(e.target.value);
                     if (val >= 0 && val <= 100) updateDeal(selectedDealId, { discountFloorPct: val });
                   }}
-                  className="font-mono"
+                  className="font-mono !pr-3"
                   placeholder="e.g., 20"
                 />
               </div>
