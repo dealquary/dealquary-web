@@ -34,7 +34,7 @@ export default function Page() {
               </button>
               <div>
                 <h1 className="text-sm font-bold text-white tracking-tight">
-                  {deal?.name || "Deal Workbench"}
+                  DealQuary
                 </h1>
               </div>
             </div>

@@ -43,7 +43,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const newDeal: Deal = DealSchema.parse({
         id: uid("deal"),
-        name: "",
+        name: "Untitled Deal",
         billingCadence: "MONTHLY",
         contractLengthType: "YEARS",
         contractYears: 1,

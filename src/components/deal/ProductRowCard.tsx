@@ -22,6 +22,10 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
   const [localName, setLocalName] = useState<string | null>(null);
   const [localPrice, setLocalPrice] = useState<string | null>(null);
   const [localLicenses, setLocalLicenses] = useState<string | null>(null);
+  const [localMargin, setLocalMargin] = useState<string | null>(null);
+  const [localProfitPerUnit, setLocalProfitPerUnit] = useState<string | null>(null);
+  const [localOneTimeProfit, setLocalOneTimeProfit] = useState<string | null>(null);
+  const [localDiscount, setLocalDiscount] = useState<string | null>(null);
   const updateProduct = useAppStore((s) => s.updateProduct);
   const removeProduct = useAppStore((s) => s.removeProduct);
   const duplicateProduct = useAppStore((s) => s.duplicateProduct);
@@ -86,41 +90,47 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
         {/* Price */}
         <div className="flex-shrink-0 w-28">
           {p.type === "RECURRING" ? (
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
-              onChange={(e) => {
-                setLocalPrice(e.target.value);
-              }}
-              onBlur={(e) => {
-                const val = Number(e.target.value);
-                const finalVal = val >= 0 ? val : 0;
-                updateProduct(dealId, p.id, { listPricePerUnitMonthly: finalVal });
-                setLocalPrice(null);
-              }}
-              className="text-sm font-mono !pl-2 !pr-1 !py-1 text-right"
-              placeholder="$49/mo"
-            />
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-white/50 pointer-events-none">$</span>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
+                onChange={(e) => {
+                  setLocalPrice(e.target.value);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const finalVal = val >= 0 ? val : 0;
+                  updateProduct(dealId, p.id, { listPricePerUnitMonthly: finalVal });
+                  setLocalPrice(null);
+                }}
+                className="text-sm font-mono !pl-6 !pr-1 !py-1 text-right"
+                placeholder="49"
+              />
+            </div>
           ) : (
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={localPrice !== null ? localPrice : p.oneTimeListPrice}
-              onChange={(e) => {
-                setLocalPrice(e.target.value);
-              }}
-              onBlur={(e) => {
-                const val = Number(e.target.value);
-                const finalVal = val >= 0 ? val : 0;
-                updateProduct(dealId, p.id, { oneTimeListPrice: finalVal });
-                setLocalPrice(null);
-              }}
-              className="text-sm font-mono !pl-2 !pr-1 !py-1 text-right"
-              placeholder="$5000"
-            />
+            <div className="relative">
+              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-white/50 pointer-events-none">$</span>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.oneTimeListPrice}
+                onChange={(e) => {
+                  setLocalPrice(e.target.value);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const finalVal = val >= 0 ? val : 0;
+                  updateProduct(dealId, p.id, { oneTimeListPrice: finalVal });
+                  setLocalPrice(null);
+                }}
+                className="text-sm font-mono !pl-6 !pr-1 !py-1 text-right"
+                placeholder="5000"
+              />
+            </div>
           )}
         </div>
 
@@ -201,10 +211,15 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   min="0"
                   max="1"
                   step="0.01"
-                  value={p.marginPct}
+                  value={localMargin !== null ? localMargin : p.marginPct}
                   onChange={(e) => {
+                    setLocalMargin(e.target.value);
+                  }}
+                  onBlur={(e) => {
                     const val = Number(e.target.value);
-                    if (val >= 0 && val <= 1) updateProduct(dealId, p.id, { marginPct: val });
+                    const finalVal = val >= 0 && val <= 1 ? val : 0;
+                    updateProduct(dealId, p.id, { marginPct: finalVal });
+                    setLocalMargin(null);
                   }}
                   className="font-mono"
                 />
@@ -214,10 +229,15 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   type="number"
                   min="0"
                   step="0.01"
-                  value={p.profitPerUnitMonthly}
+                  value={localProfitPerUnit !== null ? localProfitPerUnit : p.profitPerUnitMonthly}
                   onChange={(e) => {
+                    setLocalProfitPerUnit(e.target.value);
+                  }}
+                  onBlur={(e) => {
                     const val = Number(e.target.value);
-                    if (val >= 0) updateProduct(dealId, p.id, { profitPerUnitMonthly: val });
+                    const finalVal = val >= 0 ? val : 0;
+                    updateProduct(dealId, p.id, { profitPerUnitMonthly: finalVal });
+                    setLocalProfitPerUnit(null);
                   }}
                   className="font-mono"
                   placeholder="30"
@@ -228,10 +248,15 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   type="number"
                   min="0"
                   step="0.01"
-                  value={p.oneTimeProfit}
+                  value={localOneTimeProfit !== null ? localOneTimeProfit : p.oneTimeProfit}
                   onChange={(e) => {
+                    setLocalOneTimeProfit(e.target.value);
+                  }}
+                  onBlur={(e) => {
                     const val = Number(e.target.value);
-                    if (val >= 0) updateProduct(dealId, p.id, { oneTimeProfit: val });
+                    const finalVal = val >= 0 ? val : 0;
+                    updateProduct(dealId, p.id, { oneTimeProfit: finalVal });
+                    setLocalOneTimeProfit(null);
                   }}
                   className="font-mono"
                   placeholder="2500"
@@ -256,10 +281,15 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                 label={p.customerDiscountMode === "PERCENT" ? "Discount %" : `Discount ${p.type === "RECURRING" ? "/Lic" : "$"}`}
                 type="number"
                 min="0"
-                value={p.customerDiscountValue}
+                value={localDiscount !== null ? localDiscount : p.customerDiscountValue}
                 onChange={(e) => {
+                  setLocalDiscount(e.target.value);
+                }}
+                onBlur={(e) => {
                   const val = Number(e.target.value);
-                  if (val >= 0) updateProduct(dealId, p.id, { customerDiscountValue: val });
+                  const finalVal = val >= 0 ? val : 0;
+                  updateProduct(dealId, p.id, { customerDiscountValue: finalVal });
+                  setLocalDiscount(null);
                 }}
                 className="font-mono"
               />
