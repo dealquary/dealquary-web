@@ -4,7 +4,9 @@ import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import Stripe from "stripe";
-
+export async function POST(req: Request) {
+  // ...
+}
 /**
  * Stripe Webhook Handler - Activates Pro Subscriptions
  *
@@ -20,7 +22,6 @@ import Stripe from "stripe";
  */
 
 // Force Node.js runtime (required for raw body access)
-export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   console.log("🔔 Webhook received");
