@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { Roboto_Mono } from "next/font/google";
 
 const robotoMono = Roboto_Mono({
@@ -26,7 +27,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={robotoMono.variable}>
       <body className="min-h-screen">
         <ErrorBoundary>
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            {children}
+            <FeedbackWidget />
+          </SessionProvider>
         </ErrorBoundary>
       </body>
     </html>

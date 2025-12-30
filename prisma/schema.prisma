@@ -53,6 +53,7 @@ model User {
   accounts           Account[]
   sessions           Session[]
   subscriptions      Subscription[]
+  feedback           Feedback[]
 }
 
 model VerificationToken {
@@ -81,4 +82,21 @@ model Subscription {
 
   @@index([userId])
   @@index([stripeSubscriptionId])
+}
+
+// Feedback from users
+model Feedback {
+  id         String   @id @default(cuid())
+  message    String   @db.Text
+  pathname   String
+  userId     String?
+  userEmail  String?
+  userAgent  String?
+  isPro      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
 }

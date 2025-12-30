@@ -32,10 +32,34 @@ export default function ProductTable({ dealId }: { dealId: string }) {
       <div className="p-4">
         {deal.products.length === 0 ? (
           <div className="text-center py-12 px-6">
-            <p className="text-sm text-white/60">No line items yet</p>
-            <p className="text-xs text-white/40 mt-1">
-              Click &quot;+ Add Product&quot; to start building your deal
+            <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-pink-400/30">
+              <svg
+                className="w-8 h-8 text-pink-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-white mb-1">
+              Add your first product line
+            </h3>
+            <p className="text-sm text-white/60 mb-4">
+              Start with pricing, margin, and term assumptions — metrics update instantly
             </p>
+            <Button
+              variant="primary"
+              onClick={() => addProduct(dealId, "RECURRING")}
+              className="!text-sm"
+            >
+              + Add Product
+            </Button>
           </div>
         ) : (
           <div className="space-y-2">

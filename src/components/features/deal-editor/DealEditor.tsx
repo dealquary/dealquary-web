@@ -45,6 +45,9 @@ export default function DealEditor() {
             className="text-xl font-bold border-0 px-2 !ring-0 !outline-none focus:!ring-0 focus:!border-0"
             placeholder="Deal Name"
           />
+          <p className="text-xs text-white/50 mt-1 px-2">
+            Model SaaS deal economics in real time — ARR, margin, payback, and risk
+          </p>
         </div>
       </Card>
 

@@ -45,7 +45,7 @@ export default function DealTotals() {
   // Calculate deal health
   const health = evaluateDealHealth(deal);
 
-  const handlePrint = () => {
+  const handleExport = () => {
     if (!isAuthenticated) {
       signIn("google");
       return;
@@ -54,7 +54,7 @@ export default function DealTotals() {
       router.push("/billing");
       return;
     }
-    window.print();
+    setIsExportDrawerOpen(true);
   };
 
   return (
@@ -81,22 +81,13 @@ export default function DealTotals() {
                 </span>
               )}
               <button
-                onClick={() => setIsExportDrawerOpen(true)}
+                onClick={handleExport}
                 className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Export
-              </button>
-              <button
-                onClick={handlePrint}
-                className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-white/70 hover:text-white border border-white/20 rounded-md hover:bg-white/10 transition-colors"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "PDF"}
+                {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "Export"}
               </button>
             </div>
           </div>

@@ -8,12 +8,18 @@ import { useAppStore } from "@/state/store";
 import { Card } from "@/components/ui/Card";
 import AppBackground from "@/components/AppBackground";
 import { Drawer } from "@/components/ui/Drawer";
+import { UserMenu } from "@/components/UserMenu";
+import { useSession } from "next-auth/react";
 
 
 export default function Page() {
   const [isDealsDrawerOpen, setIsDealsDrawerOpen] = useState(false);
   const selectedDealId = useAppStore((s) => s.selectedDealId);
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
+  const { data: session, status } = useSession();
+
+  const isPro = session?.user?.isPro || false;
+  const isAuthenticated = status === "authenticated";
 
   return (
     <AppBackground>
@@ -39,9 +45,23 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Right: Scenario Tabs + Actions */}
-            <div className="flex items-center gap-2">
-              <div className="text-xs text-white/40 font-mono">Local Mode</div>
+            {/* Right: Plan Badge + User Menu */}
+            <div className="flex items-center gap-3">
+              {/* Plan Badge */}
+              {status !== "loading" && (
+                <div className="hidden sm:block">
+                  {isPro ? (
+                    <span className="px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-amber-400/20 to-yellow-400/20 border border-amber-400/30 rounded-full text-amber-300">
+                      PRO
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 text-xs font-semibold bg-white/10 border border-white/20 rounded-full text-white/70">
+                      FREE
+                    </span>
+                  )}
+                </div>
+              )}
+              <UserMenu />
             </div>
           </div>
         </div>
@@ -115,6 +135,22 @@ export default function Page() {
       >
         <DealsSidebar />
       </Drawer>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-black/20 backdrop-blur-sm mt-12">
+        <div className="max-w-[2400px] mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-white/40">
+              DealQuary does not store customer PII or contract documents. Calculations are private to your account.
+            </p>
+            {!isPro && isAuthenticated && (
+              <p className="text-xs text-white/50">
+                <span className="text-cyan-300 font-semibold">Pro unlocks:</span> exports, saved deals, advanced metrics
+              </p>
+            )}
+          </div>
+        </div>
+      </footer>
     </AppBackground>
   );
 }

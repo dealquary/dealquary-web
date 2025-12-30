@@ -43,6 +43,31 @@ export default function BillingPage() {
     }
   };
 
+  const handleManageBilling = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create portal session");
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Portal error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setLoading(false);
+    }
+  };
+
   const isPro = session?.user?.isPro || false;
 
   return (
@@ -82,32 +107,73 @@ export default function BillingPage() {
           </div>
 
         {isPro ? (
-          <Card glow="cyan" className="bg-white/10">
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-cyan-400/30">
-                <svg
-                  className="w-8 h-8 text-cyan-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+          <div className="max-w-2xl mx-auto">
+            <Card glow="cyan" className="bg-white/10">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/10">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1">Current Plan</h2>
+                    <p className="text-white/60">Manage your subscription and billing</p>
+                  </div>
+                  <div className="px-4 py-2 bg-gradient-to-r from-amber-400/20 to-yellow-400/20 border border-amber-400/30 rounded-lg">
+                    <div className="text-xs text-white/60 uppercase tracking-wide mb-0.5">Plan</div>
+                    <div className="text-lg font-bold text-amber-300">Pro</div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white/80 mb-3 uppercase tracking-wide">Active Features</h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-center gap-2 text-white/70">
+                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>PDF export for all deals</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-white/70">
+                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Sync across all devices</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-white/70">
+                        <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Priority support</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-4 border-t border-white/10">
+                    <Button
+                      variant="primary"
+                      onClick={handleManageBilling}
+                      disabled={loading}
+                      className="w-full !py-3"
+                    >
+                      {loading ? "Loading..." : "Manage Billing"}
+                    </Button>
+                    <p className="text-xs text-white/50 text-center mt-3">
+                      Update payment method, view invoices, or cancel subscription
+                    </p>
+                    {error && (
+                      <div className="mt-3 p-2 bg-red-500/10 border border-red-400/30 rounded text-xs text-red-300">
+                        {error}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4">
+                    <Button variant="secondary" onClick={() => router.push("/")} className="w-full">
+                      Back to Dashboard
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">You&apos;re already Pro!</h2>
-              <p className="text-white/70 mb-6">
-                You have access to all Pro features including PDF export.
-              </p>
-              <Button variant="secondary" onClick={() => router.push("/")}>
-                Back to Dashboard
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {/* Free Plan */}
@@ -274,6 +340,13 @@ export default function BillingPage() {
             </Card>
           </div>
         )}
+        </div>
+
+        {/* Data Safety Footer */}
+        <div className="max-w-4xl mx-auto mt-12 text-center">
+          <p className="text-xs text-white/40">
+            DealQuary does not store customer PII or contract documents. Calculations are private to your account.
+          </p>
         </div>
       </div>
     </AppBackground>
