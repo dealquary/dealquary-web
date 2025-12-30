@@ -2,9 +2,9 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import type { Adapter } from "next-auth/adapters";
-import type { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+// Keep as a plain object to avoid NextAuthOptions type mismatch across v4/v5 surfaces.
+export const authOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
 
   providers: [
@@ -14,34 +14,34 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
-  // ✅ Helps reveal the real production error
+  // Turn on debug so Vercel logs show the real root cause
   debug: true,
 
-  // ✅ Much better logs in Vercel (shows actual root cause)
   logger: {
-    error(code, metadata) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error(code: any, metadata: any) {
       console.error("[auth][error]", code, metadata);
     },
-    warn(code) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    warn(code: any) {
       console.warn("[auth][warn]", code);
     },
-    debug(code, metadata) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debug(code: any, metadata: any) {
       console.log("[auth][debug]", code, metadata);
     },
   },
 
-  // ✅ Important when running behind Vercel/proxies (especially v5 beta)
-  // If TS complains because of your installed types, remove this line and set env AUTH_TRUST_HOST=true instead.
-  // @ts-expect-error - trustHost exists in Auth.js/NextAuth v5
+  // For Auth.js / NextAuth v5 behind Vercel/proxies.
+  // If your installed types complain, keep the ts-ignore.
+  // @ts-ignore
   trustHost: true,
 
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        // Your app expects these fields on the client
-        // @ts-expect-error - extend session user type if you want strict typing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session({ session, user }: any) {
+      if (session?.user) {
         session.user.id = user.id;
-        // @ts-expect-error - extend session user type if you want strict typing
         session.user.isPro = user.isPro ?? false;
       }
       return session;
