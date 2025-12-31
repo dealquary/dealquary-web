@@ -15,7 +15,6 @@ import { useSession } from "next-auth/react";
 export default function Page() {
   const [isDealsDrawerOpen, setIsDealsDrawerOpen] = useState(false);
   const selectedDealId = useAppStore((s) => s.selectedDealId);
-  const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
   const { data: session, status } = useSession();
 
   const isPro = session?.user?.isPro || false;

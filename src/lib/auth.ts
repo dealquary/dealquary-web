@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth.config";
 
+// @ts-expect-error - NextAuth v5 types may not perfectly align with our v4-style config
 const { auth: getServerSession } = NextAuth(authOptions);
 
 export async function getCurrentUser() {

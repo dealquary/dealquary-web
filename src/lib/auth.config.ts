@@ -33,8 +33,6 @@ export const authOptions = {
   },
 
   // For Auth.js / NextAuth v5 behind Vercel/proxies.
-  // If your installed types complain, keep the ts-ignore.
-  // @ts-ignore
   trustHost: true,
 
   callbacks: {
@@ -54,6 +52,6 @@ export const authOptions = {
   },
 
   session: {
-    strategy: "database",
+    strategy: "database" as const,
   },
 };

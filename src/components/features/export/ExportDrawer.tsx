@@ -291,7 +291,6 @@ export function ExportDrawer({ isOpen, onClose }: ExportDrawerProps) {
     const marginLeft = 20;
     const marginRight = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
-    const contentWidth = pageWidth - marginLeft - marginRight;
 
     let yPosition = 20;
 
