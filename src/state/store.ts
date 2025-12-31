@@ -43,7 +43,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const newDeal: Deal = DealSchema.parse({
         id: uid("deal"),
-        name: "Untitled Deal",
+        name: "",
         billingCadence: "MONTHLY",
         contractLengthType: "YEARS",
         contractYears: 1,
@@ -172,8 +172,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const base: Partial<Product> =
         type === "RECURRING"
-          ? { type, licenses: 100, listPricePerUnitMonthly: 10, name: "New recurring product" }
-          : { type, oneTimeListPrice: 5000, name: "New one-time product" };
+          ? { type, licenses: 100, listPricePerUnitMonthly: 10, name: "" }
+          : { type, oneTimeListPrice: 5000, name: "" };
 
       const newProduct: Product = ProductSchema.parse({
         id: uid("prod"),

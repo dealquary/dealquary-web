@@ -33,8 +33,7 @@ export default function DealEditor() {
             }}
             onBlur={(e) => {
               const trimmed = e.target.value.trim();
-              const finalName = trimmed.length > 0 ? trimmed : "Untitled Deal";
-              updateDeal(selectedDealId, { name: finalName });
+              updateDeal(selectedDealId, { name: trimmed });
               setLocalName(null);
             }}
             onKeyDown={(e) => {

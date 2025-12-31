@@ -17,8 +17,6 @@ export default function DealsSidebar() {
     if (!hydrated) hydrate();
   }, [hydrated, hydrate]);
 
-  const namedDeals = deals.filter((d) => d.name.trim().length > 0);
-
   return (
     <div className="bg-[#050810] border border-white/[0.08] rounded-lg overflow-visible">
       {/* Header */}
@@ -33,13 +31,13 @@ export default function DealsSidebar() {
 
       {/* Deal List */}
       <div className="py-1">
-        {namedDeals.length === 0 ? (
+        {deals.length === 0 ? (
           <div className="px-3 py-8 text-center">
             <p className="text-xs text-white/50">No deals yet</p>
             <p className="text-xs text-white/30 mt-1">Create your first deal</p>
           </div>
         ) : (
-          namedDeals.map((deal) => (
+          deals.map((deal) => (
             <DealListItem
               key={deal.id}
               deal={deal}

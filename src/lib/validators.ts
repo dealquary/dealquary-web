@@ -17,7 +17,7 @@ export type ProductType = z.infer<typeof ProductTypeSchema>;
 
 export const ProductSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
+  name: z.string(),
   type: ProductTypeSchema,
 
   includeInTotals: z.boolean().default(true),

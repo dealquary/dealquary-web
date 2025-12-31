@@ -55,9 +55,7 @@ export default function DealListItem({ deal, isSelected }: DealListItemProps) {
   };
 
   const handleRenameSubmit = () => {
-    if (newName.trim().length > 0) {
-      updateDeal(deal.id, { name: newName.trim() });
-    }
+    updateDeal(deal.id, { name: newName.trim() });
     setIsRenaming(false);
   };
 
@@ -72,8 +70,9 @@ export default function DealListItem({ deal, isSelected }: DealListItemProps) {
   };
 
   const handleDelete = () => {
+    const displayName = deal.name.trim() || "Untitled Deal";
     const confirmed = window.confirm(
-      `Are you sure you want to delete "${deal.name}"? This action cannot be undone.`
+      `Are you sure you want to delete "${displayName}"? This action cannot be undone.`
     );
     if (confirmed) {
       deleteDeal(deal.id);
@@ -115,6 +114,7 @@ export default function DealListItem({ deal, isSelected }: DealListItemProps) {
               handleRenameCancel();
             }
           }}
+          placeholder="Deal Name"
           className="w-full px-2 py-1 text-sm font-semibold text-white bg-white/10 border border-cyan-400/50 rounded outline-none"
           onClick={(e) => e.stopPropagation()}
         />
@@ -122,8 +122,8 @@ export default function DealListItem({ deal, isSelected }: DealListItemProps) {
         <>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className={`text-sm font-medium truncate ${isSelected ? "text-white font-semibold" : "text-white/90"}`}>
-                {deal.name}
+              <div className={`text-sm font-medium truncate ${isSelected ? "text-white font-semibold" : "text-white/90"} ${!deal.name.trim() ? "italic text-white/40" : ""}`}>
+                {deal.name.trim() || "Untitled Deal"}
               </div>
               <div className="text-xs text-white/50 mt-0.5">
                 {deal.products.length} {deal.products.length === 1 ? "product" : "products"} • {contractTerm}

@@ -80,11 +80,10 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
               }}
               onBlur={(e) => {
                 const trimmed = e.target.value.trim();
-                const finalName = trimmed.length > 0 ? trimmed : (p.type === "RECURRING" ? "Unnamed Product" : "Unnamed Service");
-                updateProduct(dealId, p.id, { name: finalName });
+                updateProduct(dealId, p.id, { name: trimmed });
                 setLocalName(null);
               }}
-              placeholder={p.type === "RECURRING" ? "SentinelOne Control" : "Onboarding & Setup"}
+              placeholder={p.type === "RECURRING" ? "Product Name (e.g., SentinelOne Control)" : "Service Name (e.g., Onboarding & Setup)"}
               className="text-sm border-0 !px-2 !py-1 !bg-transparent !ring-0 hover:!bg-white/5 font-medium"
             />
           </div>
