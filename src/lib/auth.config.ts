@@ -20,7 +20,7 @@ export const authOptions = {
   logger: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error(code: any, metadata: any) {
-      console.error("[auth][error]", code, metadata);
+      console.error("[auth][error]", JSON.stringify({ code, metadata }, null, 2));
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     warn(code: any) {
@@ -28,7 +28,7 @@ export const authOptions = {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     debug(code: any, metadata: any) {
-      console.log("[auth][debug]", code, metadata);
+      console.log("[auth][debug]", JSON.stringify({ code, metadata }, null, 2));
     },
   },
 
