@@ -15,7 +15,7 @@ export function middleware(req: NextRequest) {
   if (!isProduction && !isLocalhost && !isVercelPreview && process.env.NODE_ENV === "production") {
     url.hostname = "dealquary.app";
     url.protocol = "https:";
-    return NextResponse.redirect(url, 308);
+    return NextResponse.redirect(url, 307); // 307 Temporary - prevents aggressive caching
   }
 
   return NextResponse.next();

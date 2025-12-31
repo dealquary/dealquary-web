@@ -57,7 +57,7 @@ export default function DealEditor() {
         <div className="p-4" id="deal-shape-section">
           <button
             onClick={() => setShowDealShape(!showDealShape)}
-            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
           >
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
@@ -68,7 +68,7 @@ export default function DealEditor() {
               </p>
             </div>
             <svg
-              className={`w-5 h-5 text-white/60 transition-transform ${showDealShape ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-white/60 transition-transform duration-300 ${showDealShape ? "rotate-180" : "rotate-0"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -77,14 +77,20 @@ export default function DealEditor() {
             </svg>
           </button>
 
-          {showDealShape && (
+          <div
+            className="overflow-hidden transition-all duration-300 ease-in-out"
+            style={{
+              maxHeight: showDealShape ? "500px" : "0",
+              opacity: showDealShape ? 1 : 0,
+            }}
+          >
             <div className="mt-4">
               <DealShapeBar
                 deal={deal}
                 onUpdate={(patch) => updateDeal(selectedDealId, patch)}
               />
             </div>
-          )}
+          </div>
         </div>
       </Card>
 
@@ -96,7 +102,7 @@ export default function DealEditor() {
         <div className="p-4" id="advanced-guardrails-section">
           <button
             onClick={() => setShowAdvancedGuardrails(!showAdvancedGuardrails)}
-            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
           >
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
@@ -107,7 +113,7 @@ export default function DealEditor() {
               </p>
             </div>
             <svg
-              className={`w-5 h-5 text-white/60 transition-transform ${showAdvancedGuardrails ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-white/60 transition-transform duration-300 ${showAdvancedGuardrails ? "rotate-180" : "rotate-0"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -116,7 +122,13 @@ export default function DealEditor() {
             </svg>
           </button>
 
-          {showAdvancedGuardrails && (
+          <div
+            className="overflow-hidden transition-all duration-300 ease-in-out"
+            style={{
+              maxHeight: showAdvancedGuardrails ? "1200px" : "0",
+              opacity: showAdvancedGuardrails ? 1 : 0,
+            }}
+          >
             <div className="mt-4 space-y-3">
               {/* 2x2 Grid of Toggle Panels */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -316,7 +328,7 @@ export default function DealEditor() {
                 />
               </div>
             </div>
-          )}
+          </div>
         </div>
       </Card>
     </div>

@@ -65,7 +65,7 @@ export default function DealTotals() {
         <div className="p-3" id="deal-metrics-section">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
           >
             <div>
               <h2 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">Deal Metrics</h2>
@@ -74,7 +74,7 @@ export default function DealTotals() {
               </p>
             </div>
             <svg
-              className={`w-5 h-5 text-white/60 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              className={`w-5 h-5 text-white/60 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -83,8 +83,14 @@ export default function DealTotals() {
             </svg>
           </button>
 
-          {isExpanded && (
-            <>
+          <div
+            className="overflow-hidden transition-all duration-300 ease-in-out"
+            style={{
+              maxHeight: isExpanded ? "1500px" : "0",
+              opacity: isExpanded ? 1 : 0,
+            }}
+          >
+            <div>
               <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
                 <div className="text-xs text-white/50">{deal.name || "Untitled Deal"}</div>
                 <div className="flex items-center gap-2">
@@ -289,8 +295,8 @@ export default function DealTotals() {
                   </div>
                 )}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </Card>
 

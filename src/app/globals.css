@@ -27,6 +27,13 @@
   --color-text-tertiary: 156 163 175; /* gray-400 */
   --color-border: 229 231 235; /* gray-200 */
   --color-border-light: 243 244 246; /* gray-100 */
+
+  /* Animation Timing Variables */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
@@ -34,8 +41,27 @@ body {
 }
 
 /* Smooth transitions for interactive elements */
-* {
-  @apply transition-colors duration-150;
+/* Avoid applying to all elements as it can interfere with specific transitions */
+button,
+a,
+input,
+textarea,
+select {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, transform;
+  transition-duration: var(--transition-fast);
+  transition-timing-function: var(--ease-out);
+}
+
+/* Accessibility: Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Progressive Disclosure Animations */
@@ -45,6 +71,46 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes expandCollapse {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 2000px;
+  }
+}
+
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -106,6 +172,51 @@ body {
 
 .animate-slideUp {
   animation: slideUp 0.3s ease-out forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.animate-slideInTop {
+  animation: slideInTop 0.3s var(--ease-out) forwards;
+}
+
+/* Accordion Animation Utilities */
+.accordion-content {
+  overflow: hidden;
+  transition: max-height var(--transition-normal), opacity var(--transition-normal);
+}
+
+.accordion-content-enter {
+  max-height: 0;
+  opacity: 0;
+}
+
+.accordion-content-enter-active {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.accordion-content-exit {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.accordion-content-exit-active {
+  max-height: 0;
+  opacity: 0;
 }
 
 /* Print Styles */

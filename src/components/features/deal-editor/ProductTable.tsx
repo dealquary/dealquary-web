@@ -18,7 +18,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
       <div className="p-4" id="products-section">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+          className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
         >
           <div>
             <h2 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
@@ -29,7 +29,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
             </p>
           </div>
           <svg
-            className={`w-5 h-5 text-white/60 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            className={`w-5 h-5 text-white/60 transition-transform duration-300 ${isExpanded ? "rotate-180" : "rotate-0"}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -38,7 +38,13 @@ export default function ProductTable({ dealId }: { dealId: string }) {
           </svg>
         </button>
 
-        {isExpanded && (
+        <div
+          className="overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            maxHeight: isExpanded ? "2000px" : "0",
+            opacity: isExpanded ? 1 : 0,
+          }}
+        >
           <div className="mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center justify-end mb-4">
               <Button variant="primary" onClick={() => addProduct(dealId, "RECURRING")} className="!text-sm">
@@ -92,7 +98,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
     </Card>
   );
