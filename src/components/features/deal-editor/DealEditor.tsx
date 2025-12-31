@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { InfoTooltip } from "@/components/ui/Tooltip";
 import ProductTable from "./ProductTable";
 import DealShapeBar from "@/components/deal/DealShapeBar";
 import { useAppStore } from "@/state/store";
@@ -64,7 +65,7 @@ export default function DealEditor() {
                 Deal Shape
               </h3>
               <p className="text-xs text-white/60 mt-0.5">
-                {showDealShape ? "Click to collapse" : "Contract length, billing cadence"}
+                Contract length, billing cadence
               </p>
             </div>
             <svg
@@ -109,7 +110,7 @@ export default function DealEditor() {
                 Advanced Guardrails
               </h3>
               <p className="text-xs text-white/60 mt-0.5">
-                {showAdvancedGuardrails ? "Click to collapse" : "CAC, free months, ramp periods & more"}
+                CAC, free months, ramp periods & more
               </p>
             </div>
             <svg
@@ -141,6 +142,7 @@ export default function DealEditor() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-sm font-semibold text-white">Customer Acquisition Cost</span>
+                        <InfoTooltip content="The total cost to acquire this customer (sales, marketing, etc.). Used to calculate LTV:CAC ratio and payback period." />
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -181,6 +183,7 @@ export default function DealEditor() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-sm font-semibold text-white">Free Months Up Front</span>
+                        <InfoTooltip content="Number of complimentary months offered at the start of the contract. Affects total contract value and cash flow." />
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -221,6 +224,7 @@ export default function DealEditor() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                         <span className="text-sm font-semibold text-white">Ramp/Onboarding Period</span>
+                        <InfoTooltip content="Discounted pricing during initial implementation phase. Common for enterprise deals during customer onboarding." />
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -277,6 +281,7 @@ export default function DealEditor() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                         <span className="text-sm font-semibold text-white">Year-over-Year Escalation</span>
+                        <InfoTooltip content="Annual price increase percentage for multi-year contracts. Helps protect against inflation and increase revenue over time." />
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input

@@ -25,7 +25,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
               Products
             </h2>
             <p className="text-xs text-white/60 mt-0.5">
-              {isExpanded ? "Click to collapse" : `${deal.products.length} ${deal.products.length === 1 ? "line item" : "line items"}`}
+              {deal.products.length} {deal.products.length === 1 ? "line item" : "line items"}
             </p>
           </div>
           <svg
@@ -46,11 +46,13 @@ export default function ProductTable({ dealId }: { dealId: string }) {
           }}
         >
           <div className="mt-4 pt-4 border-t border-white/10">
-            <div className="flex items-center justify-end mb-4">
-              <Button variant="primary" onClick={() => addProduct(dealId, "RECURRING")} className="!text-sm">
-                + Add Product
-              </Button>
-            </div>
+            {deal.products.length > 0 && (
+              <div className="flex items-center justify-end mb-4">
+                <Button variant="primary" onClick={() => addProduct(dealId, "RECURRING")} className="!text-sm">
+                  + Add Product
+                </Button>
+              </div>
+            )}
 
             {deal.products.length === 0 ? (
               <div className="text-center py-12 px-6 animate-fadeIn bg-gradient-to-br from-pink-500/5 via-purple-500/5 to-blue-500/5 rounded-lg border border-white/5">

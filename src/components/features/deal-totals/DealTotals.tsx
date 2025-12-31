@@ -70,7 +70,7 @@ export default function DealTotals() {
             <div>
               <h2 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">Deal Metrics</h2>
               <p className="text-xs text-white/60 mt-0.5">
-                {isExpanded ? "Click to collapse" : `${deal.name || "Untitled Deal"} • ${deal.products.length} products`}
+                {deal.name || "Untitled Deal"} • {deal.products.length} {deal.products.length === 1 ? "product" : "products"}
               </p>
             </div>
             <svg

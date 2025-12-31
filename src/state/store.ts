@@ -41,9 +41,19 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   createDeal: () => {
     try {
+      // Generate unique auto-incrementing name
+      const existingNames = get().deals.map((deal) => deal.name);
+      let dealNumber = 1;
+      let newDealName = `New Deal ${dealNumber}`;
+
+      while (existingNames.includes(newDealName)) {
+        dealNumber++;
+        newDealName = `New Deal ${dealNumber}`;
+      }
+
       const newDeal: Deal = DealSchema.parse({
         id: uid("deal"),
-        name: "",
+        name: newDealName,
         billingCadence: "MONTHLY",
         contractLengthType: "YEARS",
         contractYears: 1,
