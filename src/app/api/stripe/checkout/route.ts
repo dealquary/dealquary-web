@@ -71,7 +71,6 @@ export async function POST(req: NextRequest) {
     // IMPORTANT: metadata.userId is CRITICAL for webhook user mapping
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
-      customer_email: user.email || undefined, // Explicitly set email as fallback
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
