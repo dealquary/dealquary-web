@@ -59,6 +59,7 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
 
   return (
     <div
+      id={index === 0 ? "product-row-0" : undefined}
       className="bg-white/[0.03] border border-white/[0.08] rounded-lg hover:bg-white/[0.05] transition-all"
       onKeyDown={handleKeyDown}
     >

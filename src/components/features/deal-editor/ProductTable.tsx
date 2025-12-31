@@ -15,7 +15,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
 
   return (
     <Card glow="none">
-      <div className="p-4">
+      <div className="p-4" id="products-section">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"

@@ -28,6 +28,7 @@ export default function DealEditor() {
       <Card glow="none">
         <div className="p-4">
           <Input
+            id="deal-name-input"
             value={displayName}
             onChange={(e) => {
               setLocalName(e.target.value);
@@ -53,7 +54,7 @@ export default function DealEditor() {
 
       {/* Deal Shape - Collapsible */}
       <Card glow="none">
-        <div className="p-4">
+        <div className="p-4" id="deal-shape-section">
           <button
             onClick={() => setShowDealShape(!showDealShape)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
@@ -92,7 +93,7 @@ export default function DealEditor() {
 
       {/* Advanced Guardrails - Collapsible */}
       <Card glow="none">
-        <div className="p-4">
+        <div className="p-4" id="advanced-guardrails-section">
           <button
             onClick={() => setShowAdvancedGuardrails(!showAdvancedGuardrails)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"

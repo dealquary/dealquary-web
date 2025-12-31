@@ -5,11 +5,13 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "./ui/Button";
 import Link from "next/link";
 import Image from "next/image";
+import { useTutorialStore } from "@/state/tutorialStore";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { isEnabled: tutorialEnabled, enableTutorial, disableTutorial } = useTutorialStore();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -177,6 +179,30 @@ export function UserMenu() {
               Billing
             </Link>
 
+            {/* Tutorial Toggle */}
+            <div className="border-t border-white/10 my-1" />
+            <label className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-pointer">
+              <input
+                type="checkbox"
+                checked={tutorialEnabled}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    enableTutorial();
+                  } else {
+                    disableTutorial();
+                  }
+                }}
+                className="w-4 h-4 text-purple-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-purple-500 cursor-pointer"
+              />
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Tutorial Mode
+              </span>
+            </label>
+
+            <div className="border-t border-white/10 my-1" />
             <button
               onClick={() => {
                 setIsOpen(false);

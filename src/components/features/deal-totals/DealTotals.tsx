@@ -62,7 +62,7 @@ export default function DealTotals() {
     <div className="space-y-3">
       {/* Deal Header */}
       <Card glow="cyan">
-        <div className="p-3">
+        <div className="p-3" id="deal-metrics-section">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
