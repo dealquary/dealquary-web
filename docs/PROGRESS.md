@@ -15,7 +15,7 @@
 
 ## Phase 4: Polish
 - [~] Epic 10: Remove clutter - PARTIALLY COMPLETED
-- [ ] Epic 8: Deal comparison (stretch)
+- [x] Epic 8: Deal comparison (stretch) - COMPLETED
 - [ ] Epic 9: Export & sharing (stretch)
 
 ---
@@ -129,6 +129,25 @@
   - "Click to collapse" text already removed in Epic 10
 - Testing: Build passed with no errors
 - Next Steps: Commit and push all completed epics
+
+**Epic 8: Deal Comparison & Scenarios**
+- Status: ✅ COMPLETED
+- Files changed:
+  - `src/lib/scenarioComparison.ts` - Created comparison utility with delta calculation
+  - `src/components/metrics/ComparisonMetricRow.tsx` - Created side-by-side comparison row component
+  - `src/components/features/deal-totals/DealTotals.tsx` - Added comparison mode with toggle button
+- Implementation Details:
+  - Created `compareScenarios()` function to calculate deltas between two deals
+  - Implemented metric direction logic (higher is better for ARR, lower is better for Payback)
+  - Color-coded deltas: green for improvements, red for degradation
+  - "Compare Scenario" button clones current deal and activates comparison mode
+  - Comparison view shows: Metric | Deal A | Deal B | Δ Delta
+  - Delta displays show both absolute and percentage changes
+  - "Exit Comparison" button clears comparison mode
+  - Used existing `cloneDeal` and `toggleComparedDeal` functions from store
+  - All metrics compared: ARR, TCV, MRR, Margin, LTV:CAC, Payback, Profit
+- Testing: Build passed with no errors (minor ESLint warnings for unused params)
+- Next Steps: Commit Epic 8
 
 **Epic 3: Fix Dropdowns**
 - Status: ✅ COMPLETED

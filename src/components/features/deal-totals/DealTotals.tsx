@@ -13,6 +13,8 @@ import { evaluateDealHealth } from "@/lib/dealHealth";
 import { ExportDrawer } from "@/components/features/export/ExportDrawer";
 import { getMetricStatus } from "@/lib/metricThresholds";
 import { getARRFormula, getTCVFormula, getProfitFormula, getLTVCACFormula, getPaybackFormula, getMarginFormula } from "@/lib/formulas";
+import ComparisonMetricRow from "@/components/metrics/ComparisonMetricRow";
+import { compareScenarios } from "@/lib/scenarioComparison";
 
 // Helper to determine margin status
 function getMarginStatus(marginPct: number | null): { status: MetricStatus; label: string } | null {
@@ -30,6 +32,10 @@ function getMarginStatus(marginPct: number | null): { status: MetricStatus; labe
 export default function DealTotals() {
   const selectedDealId = useAppStore((s) => s.selectedDealId);
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
+  const comparedDealIds = useAppStore((s) => s.comparedDealIds);
+  const deals = useAppStore((s) => s.deals);
+  const toggleComparedDeal = useAppStore((s) => s.toggleComparedDeal);
+  const cloneDeal = useAppStore((s) => s.cloneDeal);
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isExportDrawerOpen, setIsExportDrawerOpen] = useState(false);
@@ -40,6 +46,11 @@ export default function DealTotals() {
   const totals = calcDealTotals(deal);
   const isPro = session?.user?.isPro || false;
   const isAuthenticated = status === "authenticated";
+
+  // EPIC 8: Comparison mode
+  const isComparisonMode = comparedDealIds.length > 0;
+  const comparedDeal = isComparisonMode ? deals.find((d) => comparedDealIds[0] === d.id) : null;
+  const comparedTotals = comparedDeal ? calcDealTotals(comparedDeal) : null;
 
   // EPIC 2: Calculate metric statuses using thresholds
   const marginStatus = getMarginStatus(totals.blendedMarginPct);
@@ -114,6 +125,32 @@ export default function DealTotals() {
                       Pro
                     </span>
                   )}
+                  {/* EPIC 8: Compare Scenario button */}
+                  {!isComparisonMode ? (
+                    <button
+                      onClick={() => {
+                        cloneDeal(deal.id);
+                        // The cloned deal will be selected, so we'll compare the original
+                        setTimeout(() => toggleComparedDeal(deal.id), 100);
+                      }}
+                      className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-300 hover:text-purple-200 border border-purple-400/30 bg-purple-500/10 rounded-md hover:bg-purple-500/20 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                      </svg>
+                      Compare Scenario
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => toggleComparedDeal(comparedDeal!.id)}
+                      className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-300 hover:text-red-200 border border-red-400/30 bg-red-500/10 rounded-md hover:bg-red-500/20 transition-colors"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Exit Comparison
+                    </button>
+                  )}
                   <button
                     onClick={handleExport}
                     className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
@@ -127,9 +164,9 @@ export default function DealTotals() {
               </div>
 
               <div className="mt-4 space-y-3">
-          {/* EPIC 2: Deal Health Badge - Always visible, no toggle */}
-          <div className="relative">
-            <div
+                {/* EPIC 2: Deal Health Badge - Always visible, no toggle */}
+                <div className="relative">
+                  <div
               className={`
                 w-full p-3 rounded-lg border
                 ${health.status === "strong" ? "bg-green-500/10 border-green-400/30" : ""}
@@ -188,6 +225,23 @@ export default function DealTotals() {
               </div>
             </div>
           </div>
+
+          {/* EPIC 8: Comparison Mode Header */}
+          {isComparisonMode && comparedTotals && (
+            <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-3">
+              <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] gap-3 text-[10px] font-semibold text-white/50 uppercase tracking-wide mb-2">
+                <div>Metric</div>
+                <div className="text-right">{deal.name}</div>
+                <div className="text-right">{comparedDeal?.name}</div>
+                <div className="text-right">Δ Delta</div>
+              </div>
+              <div className="space-y-1">
+                {compareScenarios(totals, comparedTotals, deal.name, comparedDeal?.name || "Scenario B").map((metric) => (
+                  <ComparisonMetricRow key={metric.key} metric={metric} nameA={deal.name} nameB={comparedDeal?.name || "Scenario B"} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* GROUP 1: Core Revenue (The Basics) - EPIC 5: Add formulas */}
           <div>
@@ -310,7 +364,7 @@ export default function DealTotals() {
 
             {/* Cash Flow Chart */}
             {deal.toggles.includeCAC && totals.cac > 0 && (
-              <div className="mt-3 pt-3 border-t border-white/10">
+              <div className="mt-3 pt-3 border-white/10">
                 <div className="text-xs font-semibold text-white/70 mb-2">Cash Flow to Break-Even</div>
                 <CashFlowChart deal={deal} />
               </div>
