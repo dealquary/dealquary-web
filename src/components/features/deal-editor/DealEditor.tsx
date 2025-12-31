@@ -14,6 +14,7 @@ export default function DealEditor() {
 
   // Local state for deal name to allow clearing without validation errors
   const [localName, setLocalName] = useState<string | null>(null);
+  const [showDealShape, setShowDealShape] = useState(false);
   const [showAdvancedGuardrails, setShowAdvancedGuardrails] = useState(false);
 
   if (!deal || !selectedDealId) return null;
@@ -50,14 +51,39 @@ export default function DealEditor() {
         </div>
       </Card>
 
-      {/* Deal Shape */}
+      {/* Deal Shape - Collapsible */}
       <Card glow="none">
         <div className="p-4">
-          <h3 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wide">Deal Shape</h3>
-          <DealShapeBar
-            deal={deal}
-            onUpdate={(patch) => updateDeal(selectedDealId, patch)}
-          />
+          <button
+            onClick={() => setShowDealShape(!showDealShape)}
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                Deal Shape
+              </h3>
+              <p className="text-xs text-white/60 mt-0.5">
+                {showDealShape ? "Click to collapse" : "Contract length, billing cadence"}
+              </p>
+            </div>
+            <svg
+              className={`w-5 h-5 text-white/60 transition-transform ${showDealShape ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showDealShape && (
+            <div className="mt-4">
+              <DealShapeBar
+                deal={deal}
+                onUpdate={(patch) => updateDeal(selectedDealId, patch)}
+              />
+            </div>
+          )}
         </div>
       </Card>
 

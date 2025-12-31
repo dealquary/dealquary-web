@@ -32,6 +32,7 @@ export default function DealTotals() {
   const router = useRouter();
   const [showHealthTooltip, setShowHealthTooltip] = useState(false);
   const [isExportDrawerOpen, setIsExportDrawerOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (!deal) return null;
 
@@ -61,39 +62,57 @@ export default function DealTotals() {
     <div className="space-y-3">
       {/* Deal Header */}
       <Card glow="cyan">
-        <div className="p-3 border-b border-white/10">
-          <div className="flex items-center justify-between">
+        <div className="p-3">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors group"
+          >
             <div>
-              <h2 className="text-base font-semibold text-white">Deal Metrics</h2>
-              <p className="text-xs text-white/60 mt-0.5">{deal.name}</p>
+              <h2 className="text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">Deal Metrics</h2>
+              <p className="text-xs text-white/60 mt-0.5">
+                {isExpanded ? "Click to collapse" : `${deal.name || "Untitled Deal"} • ${deal.products.length} products`}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              {isPro && (
-                <span className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-400/30">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Pro
-                </span>
-              )}
-              <button
-                onClick={handleExport}
-                className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "Export"}
-              </button>
-            </div>
-          </div>
-        </div>
+            <svg
+              className={`w-5 h-5 text-white/60 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-        <div className="p-3 space-y-3">
+          {isExpanded && (
+            <>
+              <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+                <div className="text-xs text-white/50">{deal.name || "Untitled Deal"}</div>
+                <div className="flex items-center gap-2">
+                  {isPro && (
+                    <span className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-400/30">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Pro
+                    </span>
+                  )}
+                  <button
+                    onClick={handleExport}
+                    className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "Export"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
           {/* Deal Health Badge */}
           <div className="relative">
             <button
@@ -258,16 +277,19 @@ export default function DealTotals() {
             )}
           </div>
 
-          {/* Discount Warning */}
-          {totals.exceedsDiscountFloor && (
-            <div className="p-2 bg-yellow-500/10 border border-yellow-400/30 rounded-lg flex items-center gap-2">
-              <svg className="w-4 h-4 text-yellow-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span className="text-xs font-medium text-yellow-200">
-                Avg discount <span className="font-mono">{num(totals.avgDiscountDepthPct, 1)}%</span> exceeds floor
-              </span>
-            </div>
+                {/* Discount Warning */}
+                {totals.exceedsDiscountFloor && (
+                  <div className="p-2 bg-yellow-500/10 border border-yellow-400/30 rounded-lg flex items-center gap-2">
+                    <svg className="w-4 h-4 text-yellow-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="text-xs font-medium text-yellow-200">
+                      Avg discount <span className="font-mono">{num(totals.avgDiscountDepthPct, 1)}%</span> exceeds floor
+                    </span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </Card>
