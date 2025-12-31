@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import MetricCard, { type MetricStatus } from "@/components/metrics/MetricCard";
 import { evaluateDealHealth } from "@/lib/dealHealth";
 import { ExportDrawer } from "@/components/features/export/ExportDrawer";
+import { getMetricStatus } from "@/lib/metricThresholds";
+import { getARRFormula, getTCVFormula, getProfitFormula, getLTVCACFormula, getPaybackFormula, getMarginFormula } from "@/lib/formulas";
 
 // Helper to determine margin status
 function getMarginStatus(marginPct: number | null): { status: MetricStatus; label: string } | null {
@@ -30,9 +32,8 @@ export default function DealTotals() {
   const deal = useAppStore((s) => s.deals.find((d) => d.id === selectedDealId));
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [showHealthTooltip, setShowHealthTooltip] = useState(false);
   const [isExportDrawerOpen, setIsExportDrawerOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true); // EPIC 1: Expanded by default
 
   if (!deal) return null;
 
@@ -40,8 +41,15 @@ export default function DealTotals() {
   const isPro = session?.user?.isPro || false;
   const isAuthenticated = status === "authenticated";
 
-  // Calculate margin status
+  // EPIC 2: Calculate metric statuses using thresholds
   const marginStatus = getMarginStatus(totals.blendedMarginPct);
+
+  // Convert threshold statuses to MetricCard statuses
+  const ltvCacThreshold = totals.ltvToCac ? getMetricStatus("ltvCac", totals.ltvToCac) : null;
+  const ltvCacStatus: MetricStatus | undefined = ltvCacThreshold === "good" ? "success" : ltvCacThreshold === "warning" ? "warning" : ltvCacThreshold === "bad" ? "danger" : undefined;
+
+  const paybackThreshold = totals.paybackMonths ? getMetricStatus("payback", totals.paybackMonths) : null;
+  const paybackStatus: MetricStatus | undefined = paybackThreshold === "good" ? "success" : paybackThreshold === "warning" ? "warning" : paybackThreshold === "bad" ? "danger" : undefined;
 
   // Calculate deal health
   const health = evaluateDealHealth(deal);
@@ -60,8 +68,8 @@ export default function DealTotals() {
 
   return (
     <div className="space-y-3">
-      {/* Deal Header */}
-      <Card glow="cyan">
+      {/* Deal Header - EPIC 1: Distinct visual treatment */}
+      <Card glow="cyan" className="bg-slate-900/50 border-l-2 border-cyan-500">
         <div className="p-3" id="deal-metrics-section">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -119,45 +127,34 @@ export default function DealTotals() {
               </div>
 
               <div className="mt-4 space-y-3">
-          {/* Deal Health Badge */}
+          {/* EPIC 2: Deal Health Badge - Always visible, no toggle */}
           <div className="relative">
-            <button
-              onClick={() => setShowHealthTooltip(!showHealthTooltip)}
+            <div
               className={`
-                w-full flex items-center justify-between gap-2 p-2.5 rounded-lg border transition-all
-                ${health.status === "strong" ? "bg-green-500/10 border-green-400/30 hover:bg-green-500/15" : ""}
-                ${health.status === "ok" ? "bg-yellow-500/10 border-yellow-400/30 hover:bg-yellow-500/15" : ""}
-                ${health.status === "risky" ? "bg-red-500/10 border-red-400/30 hover:bg-red-500/15" : ""}
+                w-full p-3 rounded-lg border
+                ${health.status === "strong" ? "bg-green-500/10 border-green-400/30" : ""}
+                ${health.status === "ok" ? "bg-yellow-500/10 border-yellow-400/30" : ""}
+                ${health.status === "risky" ? "bg-red-500/10 border-red-400/30" : ""}
               `}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-3">
                 <div className={`
-                  w-2 h-2 rounded-full
+                  w-3 h-3 rounded-full
                   ${health.status === "strong" ? "bg-green-400" : ""}
                   ${health.status === "ok" ? "bg-yellow-400" : ""}
                   ${health.status === "risky" ? "bg-red-400 animate-pulse" : ""}
                 `} />
-                <span className="text-xs font-semibold text-white">
-                  Deal Health: <span className={`
-                    ${health.status === "strong" ? "text-green-300" : ""}
-                    ${health.status === "ok" ? "text-yellow-300" : ""}
-                    ${health.status === "risky" ? "text-red-300" : ""}
-                  `}>
+                <span className="text-sm font-semibold text-white">
+                  Deal Health: <span className={`text-lg ${
+                    health.status === "strong" ? "text-green-300" : ""
+                  }${health.status === "ok" ? "text-yellow-300" : ""}${health.status === "risky" ? "text-red-300" : ""}`}>
                     {health.status === "strong" ? "Strong" : health.status === "ok" ? "OK" : "Risky"}
                   </span>
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-white/50">Why?</span>
-                <svg className={`w-3 h-3 text-white/40 transition-transform ${showHealthTooltip ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
 
-            {/* Tooltip/Popover */}
-            {showHealthTooltip && (
-              <div className="mt-2 p-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-lg space-y-2">
+              {/* Always visible breakdown */}
+              <div className="space-y-2">
                 {health.positives.length > 0 && (
                   <div>
                     <div className="text-[10px] font-semibold text-green-300 mb-1 uppercase tracking-wide">Strengths</div>
@@ -189,16 +186,30 @@ export default function DealTotals() {
                   </div>
                 )}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* GROUP 1: Core Revenue (The Basics) */}
+          {/* GROUP 1: Core Revenue (The Basics) - EPIC 5: Add formulas */}
           <div>
             <div className="text-xs font-semibold text-cyan-300 mb-2 uppercase tracking-wide">Core Revenue</div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <MetricCard label="MRR" value={money(totals.effectiveMRR)} rawValue={totals.effectiveMRR} compact colorType="revenue" />
-                <MetricCard label="ARR" value={money(totals.annualizedRevenue)} rawValue={totals.annualizedRevenue} compact colorType="revenue" />
+                <MetricCard
+                  label="MRR"
+                  value={money(totals.effectiveMRR)}
+                  rawValue={totals.effectiveMRR}
+                  compact
+                  colorType="revenue"
+                  formula={`MRR = Monthly Recurring Revenue\n${money(totals.effectiveMRR)}/month`}
+                />
+                <MetricCard
+                  label="ARR"
+                  value={money(totals.annualizedRevenue)}
+                  rawValue={totals.annualizedRevenue}
+                  compact
+                  colorType="revenue"
+                  formula={getARRFormula(totals.effectiveMRR)}
+                />
               </div>
               {totals.termMonths > 1 && (
                 <MetricCard
@@ -208,18 +219,33 @@ export default function DealTotals() {
                   variant="highlight"
                   compact
                   colorType="revenue"
+                  formula={getTCVFormula(totals.effectiveMRR, totals.termMonths)}
                 />
               )}
             </div>
           </div>
 
-          {/* GROUP 2: Profitability (The Mid-Tier) */}
+          {/* GROUP 2: Profitability (The Mid-Tier) - EPIC 5: Add formulas */}
           <div className="pt-2 border-t border-white/10">
             <div className="text-xs font-semibold text-green-300 mb-2 uppercase tracking-wide">Profitability</div>
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <MetricCard label="Monthly Profit" value={money(totals.monthlyProfit)} rawValue={totals.monthlyProfit} compact colorType="profit" />
-                <MetricCard label="Annual Profit" value={money(totals.termProfit / (totals.termMonths / 12))} rawValue={totals.termProfit / (totals.termMonths / 12)} compact colorType="profit" />
+                <MetricCard
+                  label="Monthly Profit"
+                  value={money(totals.monthlyProfit)}
+                  rawValue={totals.monthlyProfit}
+                  compact
+                  colorType="profit"
+                  formula={totals.blendedMarginPct ? getProfitFormula(totals.monthlyRevenue, totals.blendedMarginPct / 100) : undefined}
+                />
+                <MetricCard
+                  label="Annual Profit"
+                  value={money(totals.termProfit / (totals.termMonths / 12))}
+                  rawValue={totals.termProfit / (totals.termMonths / 12)}
+                  compact
+                  colorType="profit"
+                  formula={`Annual Profit = Total Profit / Years\n${money(totals.termProfit)} / ${num(totals.termMonths / 12, 1)} = ${money(totals.termProfit / (totals.termMonths / 12))}`}
+                />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <MetricCard
@@ -230,6 +256,7 @@ export default function DealTotals() {
                   colorType="profit"
                   status={marginStatus?.status}
                   statusLabel={marginStatus?.label}
+                  formula={totals.blendedMarginPct ? getMarginFormula(totals.termProfit, totals.tcv) : undefined}
                 />
                 <MetricCard
                   label={`Total Contract Profit (${totals.termMonths} mo)`}
@@ -238,6 +265,7 @@ export default function DealTotals() {
                   variant="highlight"
                   compact
                   colorType="profit"
+                  formula={`Total Profit = Monthly Profit × Term\n${money(totals.monthlyProfit)} × ${totals.termMonths} = ${money(totals.termProfit)}`}
                 />
               </div>
             </div>
@@ -258,19 +286,25 @@ export default function DealTotals() {
               </div>
             )}
 
-            {/* CAC Metrics */}
+            {/* CAC Metrics - EPIC 2: Color-coded thresholds, EPIC 5: Add formulas */}
             <div className="grid grid-cols-2 gap-2">
               <MetricCard
                 label="LTV:CAC"
                 value={totals.ltvToCac == null ? "—" : num(totals.ltvToCac, 2)}
                 rawValue={totals.ltvToCac ?? undefined}
                 compact
+                status={ltvCacStatus}
+                statusLabel={ltvCacThreshold === "good" ? "Strong" : ltvCacThreshold === "warning" ? "OK" : ltvCacThreshold === "bad" ? "Low" : undefined}
+                formula={totals.ltvToCac ? getLTVCACFormula(totals.contractedLTV, totals.cac) : undefined}
               />
               <MetricCard
                 label="Payback (mo)"
                 value={totals.paybackMonths == null ? "—" : num(totals.paybackMonths, 1)}
                 rawValue={totals.paybackMonths ?? undefined}
                 compact
+                status={paybackStatus}
+                statusLabel={paybackThreshold === "good" ? "Fast" : paybackThreshold === "warning" ? "OK" : paybackThreshold === "bad" ? "Slow" : undefined}
+                formula={totals.paybackMonths ? getPaybackFormula(totals.cac, totals.monthlyProfit) : undefined}
               />
             </div>
 

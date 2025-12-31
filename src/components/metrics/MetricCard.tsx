@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { formatDelta } from "@/lib/formatters";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export type MetricStatus = "success" | "warning" | "danger" | "neutral";
 
@@ -15,6 +16,7 @@ type MetricCardProps = {
   colorType?: "revenue" | "profit" | "neutral";
   status?: MetricStatus;
   statusLabel?: string;
+  formula?: string; // EPIC 5: Formula for tooltip
 };
 
 export default function MetricCard({
@@ -27,6 +29,7 @@ export default function MetricCard({
   colorType = "neutral",
   status,
   statusLabel,
+  formula,
 }: MetricCardProps) {
   const previousValue = useRef<number | null>(null);
   const [delta, setDelta] = useState<{ text: string; isPositive: boolean } | null>(null);
@@ -122,14 +125,28 @@ export default function MetricCard({
       </div>
 
       <div className="relative">
-        <div
-          className={`
-            ${compact ? "text-base" : "text-lg"} font-bold font-mono ${getTextColor()}
-            transition-all duration-300
-          `}
-        >
-          {value}
-        </div>
+        {/* EPIC 5: Wrap value in tooltip if formula exists */}
+        {formula ? (
+          <Tooltip content={formula} side="top">
+            <div
+              className={`
+                ${compact ? "text-base" : "text-lg"} font-bold font-mono ${getTextColor()}
+                transition-all duration-300 cursor-help border-b border-dotted border-white/30
+              `}
+            >
+              {value}
+            </div>
+          </Tooltip>
+        ) : (
+          <div
+            className={`
+              ${compact ? "text-base" : "text-lg"} font-bold font-mono ${getTextColor()}
+              transition-all duration-300
+            `}
+          >
+            {value}
+          </div>
+        )}
 
         {/* Delta indicator */}
         {delta && (

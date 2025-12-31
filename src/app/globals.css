@@ -74,6 +74,15 @@ select {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;

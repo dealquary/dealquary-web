@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { calcRecurringProduct, calcOneTimeProduct } from "@/lib/calc";
 import { money } from "@/lib/format";
+import { MathRollup } from "@/components/metrics/MathRollup";
+import { validators } from "@/lib/validation";
+import { getEffectivePriceDisplay } from "@/lib/formulas";
 import type { Product, Deal } from "@/lib/validators";
 
 type ProductRowCardProps = {
@@ -26,6 +29,13 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
   const [localProfitPerUnit, setLocalProfitPerUnit] = useState<string | null>(null);
   const [localOneTimeProfit, setLocalOneTimeProfit] = useState<string | null>(null);
   const [localDiscount, setLocalDiscount] = useState<string | null>(null);
+
+  // EPIC 4: Validation error states
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [licensesError, setLicensesError] = useState<string | null>(null);
+  const [marginError, setMarginError] = useState<string | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+
   const updateProduct = useAppStore((s) => s.updateProduct);
   const removeProduct = useAppStore((s) => s.removeProduct);
   const duplicateProduct = useAppStore((s) => s.duplicateProduct);
@@ -130,13 +140,22 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
                   onChange={(e) => {
                     setLocalPrice(e.target.value);
+                    // EPIC 4: Clear error when typing
+                    const val = Number(e.target.value);
+                    const error = validators.price(val);
+                    setPriceError(error);
                   }}
                   onBlur={(e) => {
                     const val = Number(e.target.value);
-                    const finalVal = val >= 0 ? val : 0;
-                    updateProduct(dealId, p.id, { listPricePerUnitMonthly: finalVal });
+                    // EPIC 4: Validate on blur
+                    const error = validators.price(val);
+                    setPriceError(error);
+                    if (!error) {
+                      updateProduct(dealId, p.id, { listPricePerUnitMonthly: val });
+                    }
                     setLocalPrice(null);
                   }}
+                  error={priceError || undefined}
                   className="text-sm font-mono !pl-6 !pr-3 !py-1 text-right"
                   placeholder="49"
                 />
@@ -151,13 +170,22 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   value={localPrice !== null ? localPrice : p.oneTimeListPrice}
                   onChange={(e) => {
                     setLocalPrice(e.target.value);
+                    // EPIC 4: Clear error when typing
+                    const val = Number(e.target.value);
+                    const error = validators.price(val);
+                    setPriceError(error);
                   }}
                   onBlur={(e) => {
                     const val = Number(e.target.value);
-                    const finalVal = val >= 0 ? val : 0;
-                    updateProduct(dealId, p.id, { oneTimeListPrice: finalVal });
+                    // EPIC 4: Validate on blur
+                    const error = validators.price(val);
+                    setPriceError(error);
+                    if (!error) {
+                      updateProduct(dealId, p.id, { oneTimeListPrice: val });
+                    }
                     setLocalPrice(null);
                   }}
+                  error={priceError || undefined}
                   className="text-sm font-mono !pl-6 !pr-3 !py-1 text-right"
                   placeholder="5000"
                 />
@@ -175,13 +203,22 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                 value={localLicenses !== null ? localLicenses : p.licenses}
                 onChange={(e) => {
                   setLocalLicenses(e.target.value);
+                  // EPIC 4: Clear error when typing
+                  const val = Number(e.target.value);
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
                 }}
                 onBlur={(e) => {
                   const val = Number(e.target.value);
-                  const finalVal = val >= 1 ? val : 1;
-                  updateProduct(dealId, p.id, { licenses: finalVal });
+                  // EPIC 4: Validate on blur
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { licenses: Math.floor(val) });
+                  }
                   setLocalLicenses(null);
                 }}
+                error={licensesError || undefined}
                 className="text-sm font-mono !pl-2 !pr-3 !py-1 text-right"
                 placeholder="50"
               />
@@ -194,10 +231,37 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
           </div>
         </div>
 
+        {/* EPIC 5: Effective price after discount */}
+        {p.customerDiscountValue > 0 && (
+          <div className="mt-1 text-xs text-white/40 font-mono">
+            {p.type === "RECURRING"
+              ? getEffectivePriceDisplay(p.listPricePerUnitMonthly, p.customerDiscountMode, p.customerDiscountValue)
+              : getEffectivePriceDisplay(p.oneTimeListPrice, p.customerDiscountMode, p.customerDiscountValue)}
+          </div>
+        )}
+
         {/* Mobile-only Metrics */}
         <div className="md:hidden mt-2 text-xs text-white/50 font-mono text-center">
           {money(lineTotals.monthlyRevenue)}/mo  |  Profit: {money(lineTotals.monthlyProfit)}
         </div>
+
+        {/* Math Rollup - EPIC 1: Show calculation chain */}
+        {p.type === "RECURRING" && lineTotals.monthlyRevenue > 0 && (
+          <div className="mt-2 px-2 py-1.5 bg-black/20 rounded-md border border-white/5">
+            <div className="flex items-center justify-between gap-3">
+              <MathRollup
+                steps={[
+                  { label: "/mo", value: money(lineTotals.monthlyRevenue) },
+                  { label: "months", value: "12" },
+                  { label: "ARR", value: `= ${money(lineTotals.annualizedRevenue)}` }
+                ]}
+              />
+              <div className="text-xs font-semibold text-cyan-300 whitespace-nowrap">
+                ARR: {money(lineTotals.annualizedRevenue)}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Advanced Section - Collapsed by Default */}
@@ -227,13 +291,22 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                   value={localMargin !== null ? localMargin : p.marginPct}
                   onChange={(e) => {
                     setLocalMargin(e.target.value);
+                    // EPIC 4: Clear error when typing
+                    const val = Number(e.target.value);
+                    const error = validators.margin(val);
+                    setMarginError(error);
                   }}
                   onBlur={(e) => {
                     const val = Number(e.target.value);
-                    const finalVal = val >= 0 && val <= 1 ? val : 0;
-                    updateProduct(dealId, p.id, { marginPct: finalVal });
+                    // EPIC 4: Validate on blur
+                    const error = validators.margin(val);
+                    setMarginError(error);
+                    if (!error) {
+                      updateProduct(dealId, p.id, { marginPct: val });
+                    }
                     setLocalMargin(null);
                   }}
+                  error={marginError || undefined}
                   className="font-mono !pr-3"
                 />
               ) : p.type === "RECURRING" ? (
@@ -297,13 +370,26 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                 value={localDiscount !== null ? localDiscount : p.customerDiscountValue}
                 onChange={(e) => {
                   setLocalDiscount(e.target.value);
+                  // EPIC 4: Clear error when typing
+                  const val = Number(e.target.value);
+                  const error = p.customerDiscountMode === "PERCENT"
+                    ? validators.discountPercent(val)
+                    : validators.discountDollars(val);
+                  setDiscountError(error);
                 }}
                 onBlur={(e) => {
                   const val = Number(e.target.value);
-                  const finalVal = val >= 0 ? val : 0;
-                  updateProduct(dealId, p.id, { customerDiscountValue: finalVal });
+                  // EPIC 4: Validate on blur
+                  const error = p.customerDiscountMode === "PERCENT"
+                    ? validators.discountPercent(val)
+                    : validators.discountDollars(val);
+                  setDiscountError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { customerDiscountValue: val });
+                  }
                   setLocalDiscount(null);
                 }}
+                error={discountError || undefined}
                 className="font-mono !pr-3"
               />
             </div>

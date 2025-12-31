@@ -193,6 +193,18 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
         >
           Cumulative Profit ($)
         </text>
+
+        {/* EPIC 2: X-axis label */}
+        <text
+          x={padding.left + chartWidth / 2}
+          y={height - 2}
+          fontSize="9"
+          fill="#6B7280"
+          textAnchor="middle"
+          fontWeight="600"
+        >
+          Month
+        </text>
       </svg>
 
       {/* Legend */}

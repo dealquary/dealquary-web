@@ -156,3 +156,40 @@ interface ComputedMetrics {
 2. Keyboard navigation flow
 3. Clipboard paste parsing
 4. Export content separation (customer-safe vs internal)
+
+
+# ... everything above stays as-is ...
+
+---
+
+## Current Sprint: UI/UX Improvements
+
+### Documentation
+- Full implementation plan: `docs/IMPLEMENTATION_PLAN.md`
+- Progress tracking: `docs/PROGRESS.md`
+- When completing an epic, append a dated entry to the Log section in docs/PROGRESS.md
+
+### Implementation Order
+1. Epic 3: Fix dropdowns (P0) - BLOCKING
+2. Epic 1: Output-first layout (P0)
+3. Epic 4: Input validation (P0)
+4. Epic 2: Deal health transparency (P0)
+5. Epic 5: Math transparency (P1)
+6. Epic 6: Product line improvements (P1)
+7. Epic 7: Section naming (P1)
+8. Epic 10: Remove clutter (P2)
+
+### Workflow
+1. Before starting, run repository discovery (see Task 0 in implementation plan)
+2. Read the relevant epic section in `docs/IMPLEMENTATION_PLAN.md`
+3. Work ONE epic at a time
+4. After completing each epic:
+   - Verify all acceptance criteria in the plan
+   - Run `npm run lint` and `npm run build`
+   - Update `docs/PROGRESS.md`
+
+### Quality Gates
+- `npm run lint` passes (no new warnings)
+- `npm run build` completes
+- No TypeScript errors
+- Calculations still produce same results (no regressions)

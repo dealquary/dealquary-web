@@ -39,7 +39,7 @@ export function Tooltip({ content, children, side = "top", className = "" }: Too
         <div
           className={`
             absolute z-50 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg shadow-xl
-            border border-white/20 max-w-xs whitespace-normal
+            border border-white/20 max-w-xs whitespace-pre-line
             animate-slideInTop
             ${positionClasses[side]}
           `}
