@@ -16,7 +16,7 @@ export default function DealEditor() {
   // Local state for deal name to allow clearing without validation errors
   const [localName, setLocalName] = useState<string | null>(null);
   const [showDealShape, setShowDealShape] = useState(false);
-  const [showAdvancedGuardrails, setShowAdvancedGuardrails] = useState(false);
+  const [showDealEconomics, setShowDealEconomics] = useState(false); // EPIC 7: Renamed from Advanced Guardrails
 
   if (!deal || !selectedDealId) return null;
 
@@ -98,23 +98,23 @@ export default function DealEditor() {
       {/* Products Table - Centerpiece */}
       <ProductTable dealId={selectedDealId} />
 
-      {/* Advanced Guardrails - Collapsible */}
+      {/* EPIC 7: Deal Economics (formerly Advanced Guardrails) - Collapsible */}
       <Card glow="none">
-        <div className="p-4" id="advanced-guardrails-section">
+        <div className="p-4" id="deal-economics-section">
           <button
-            onClick={() => setShowAdvancedGuardrails(!showAdvancedGuardrails)}
+            onClick={() => setShowDealEconomics(!showDealEconomics)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
           >
             <div>
               <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
-                Advanced Guardrails
+                Deal Economics
               </h3>
               <p className="text-xs text-white/60 mt-0.5">
                 CAC, free months, ramp periods & more
               </p>
             </div>
             <svg
-              className={`w-5 h-5 text-white/60 transition-transform duration-300 ${showAdvancedGuardrails ? "rotate-180" : "rotate-0"}`}
+              className={`w-5 h-5 text-white/60 transition-transform duration-300 ${showDealEconomics ? "rotate-180" : "rotate-0"}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -126,8 +126,8 @@ export default function DealEditor() {
           <div
             className="overflow-hidden transition-all duration-300 ease-in-out"
             style={{
-              maxHeight: showAdvancedGuardrails ? "1200px" : "0",
-              opacity: showAdvancedGuardrails ? 1 : 0,
+              maxHeight: showDealEconomics ? "1200px" : "0",
+              opacity: showDealEconomics ? 1 : 0,
             }}
           >
             <div className="mt-4 space-y-3">

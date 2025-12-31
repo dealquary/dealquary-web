@@ -10,8 +10,8 @@
 - [x] Epic 5: Math transparency - COMPLETED
 
 ## Phase 3: Workflow Improvements
-- [ ] Epic 6: Product line improvements
-- [ ] Epic 7: Section naming
+- [x] Epic 6: Product line improvements - COMPLETED
+- [x] Epic 7: Section naming - COMPLETED
 
 ## Phase 4: Polish
 - [~] Epic 10: Remove clutter - PARTIALLY COMPLETED
@@ -100,6 +100,35 @@
   - Formulas use actual calculated values, not placeholders
 - Testing: Build passed with no errors
 - Next Steps: Epic 6 (Product Line Improvements)
+
+**Epic 6: Product Line Item Improvements**
+- Status: ✅ COMPLETED
+- Files changed:
+  - `src/components/deal/ProductRowCard.tsx` - Refactored to columnar layout with margin inline
+  - `src/components/features/deal-editor/ProductTable.tsx` - Added column headers
+- Implementation Details:
+  - Moved Margin % from advanced section to main row
+  - Added column headers above product rows: Name | Price | Margin | Licenses | MRR | ARR | Actions
+  - Dynamic grid columns based on product type (recurring vs one-time)
+  - Removed Profit Mode selector (now always use Margin %)
+  - Simplified advanced section to only show Discount controls and Include toggle
+  - ARR now displayed inline for each product row
+  - Column headers adapt to product type (show/hide Licenses column)
+- Testing: Build passed with no errors
+- Next Steps: Epic 7 (Section Naming)
+
+**Epic 7: Section Naming & Organization**
+- Status: ✅ COMPLETED
+- Files changed:
+  - `src/components/features/deal-editor/DealEditor.tsx` - Renamed section and updated all references
+- Implementation Details:
+  - Renamed "Advanced Guardrails" to "Deal Economics"
+  - Updated state variable from `showAdvancedGuardrails` to `showDealEconomics`
+  - Updated section ID from `advanced-guardrails-section` to `deal-economics-section`
+  - Kept default state as collapsed (false) as designed for advanced features
+  - "Click to collapse" text already removed in Epic 10
+- Testing: Build passed with no errors
+- Next Steps: Commit and push all completed epics
 
 **Epic 3: Fix Dropdowns**
 - Status: ✅ COMPLETED
