@@ -14,7 +14,7 @@
 - [x] Epic 7: Section naming - COMPLETED
 
 ## Phase 4: Polish
-- [~] Epic 10: Remove clutter - PARTIALLY COMPLETED
+- [x] Epic 10: Remove clutter - COMPLETED
 - [x] Epic 8: Deal comparison (stretch) - COMPLETED
 - [ ] Epic 9: Export & sharing (stretch)
 
@@ -149,6 +149,29 @@
 - Testing: Build passed with no errors (minor ESLint warnings for unused params)
 - Next Steps: Commit Epic 8
 
+**Epic 10: Remove Clutter (Completion)**
+- Status: ✅ COMPLETED
+- Files changed:
+  - `src/components/ui/CurrencyInput.tsx` - NEW component for currency inputs
+  - `src/components/deal/ProductRowCard.tsx` - Replaced Input with CurrencyInput, added context menu
+  - `src/components/features/deal-editor/DealEditor.tsx` - Updated CAC input to use CurrencyInput
+  - `docs/PROGRESS.md` - Updated status to completed
+- Implementation Details:
+  - **Task 1: Fix "$" prefix in currency inputs**
+    - Created new CurrencyInput component with proper separation of "$" symbol
+    - "$" displayed in non-editable left box (bg-white/5 with border)
+    - Input field clearly separated with distinct visual boundary
+    - Auto-strips currency symbols if user types them
+    - Applied to price inputs in ProductRowCard and CAC input in DealEditor
+  - **Task 2: Remove "Include in totals" toggle**
+    - Removed checkbox from advanced section in ProductRowCard
+    - Added right-click context menu for toggle functionality
+    - Excluded products show with red border (border-red-500/30) and 60% opacity
+    - Context menu shows "Include in totals" or "Exclude from totals" with appropriate icons
+    - Menu auto-closes when clicking outside
+- Testing: Build passed with no errors
+- Next Steps: Commit Epic 10 completion
+
 **Epic 3: Fix Dropdowns**
 - Status: ✅ COMPLETED
 - Files changed: `src/components/ui/Select.tsx`
@@ -156,15 +179,22 @@
 - Notes: Verified working correctly with proper focus states and accessibility
 
 **Epic 10: Remove Clutter**
-- Status: 🔄 PARTIALLY COMPLETED
+- Status: ✅ COMPLETED
 - Files changed:
-  - `src/components/features/deal-editor/DealEditor.tsx` (removed redundant "Click to collapse" text)
+  - `src/components/features/deal-editor/DealEditor.tsx` (removed redundant text, added CurrencyInput)
   - `src/components/features/deal-editor/ProductTable.tsx` (consolidated duplicate Add Product buttons)
   - `src/components/features/deal-totals/DealTotals.tsx` (removed redundant text)
-- Remaining:
-  - [ ] Fix "$" prefix in currency inputs (shouldn't be editable)
-  - [ ] Remove "Include in totals" toggle (make it a right-click menu)
-- Notes: Core clutter reduction complete, polish items remain
+  - `src/components/ui/CurrencyInput.tsx` (NEW - proper currency input with non-editable "$" prefix)
+  - `src/components/deal/ProductRowCard.tsx` (replaced Input with CurrencyInput, added context menu for "Include in totals")
+- Implementation Details:
+  - Created CurrencyInput component with clearly separated "$" symbol in a non-editable left section
+  - "$" symbol shown in separate bg-white/5 box with border, making it visually distinct
+  - Auto-strips any currency symbols typed by users
+  - Removed "Include in totals" checkbox from advanced section
+  - Added right-click context menu to toggle "Include/Exclude from totals"
+  - Excluded products now show with red border (border-red-500/30) and reduced opacity (60%)
+  - Context menu shows appropriate icon and text based on current state
+- Notes: All clutter reduction tasks complete, UI is cleaner and more professional
 
 ### Previous Work (Pre-Epic Workflow)
 **Phase 1: Smooth Animations**

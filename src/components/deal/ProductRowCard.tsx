@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useAppStore } from "@/state/store";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { Select } from "@/components/ui/Select";
 import { calcRecurringProduct, calcOneTimeProduct } from "@/lib/calc";
 import { money } from "@/lib/format";
@@ -32,6 +33,9 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
   const [licensesError, setLicensesError] = useState<string | null>(null);
   const [marginError, setMarginError] = useState<string | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
+
+  // EPIC 10: Context menu for "Include in totals"
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const updateProduct = useAppStore((s) => s.updateProduct);
   const removeProduct = useAppStore((s) => s.removeProduct);
@@ -64,6 +68,21 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
     }
   };
 
+  // EPIC 10: Context menu handlers
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  // Close context menu when clicking outside
+  React.useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener("click", handleClick);
+      return () => document.removeEventListener("click", handleClick);
+    }
+  }, [contextMenu]);
+
   // EPIC 6: Dynamic grid template based on product type
   const gridCols = p.type === "RECURRING"
     ? "grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_1fr_auto]" // With Licenses column
@@ -72,8 +91,11 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
   return (
     <div
       id={index === 0 ? "product-row-0" : undefined}
-      className="bg-white/[0.03] border border-white/[0.08] rounded-lg hover:bg-white/[0.05] transition-all"
+      className={`bg-white/[0.03] border rounded-lg hover:bg-white/[0.05] transition-all ${
+        !p.includeInTotals ? "border-red-500/30 opacity-60" : "border-white/[0.08]"
+      }`}
       onKeyDown={handleKeyDown}
+      onContextMenu={handleContextMenu}
     >
       {/* EPIC 6: Main Row - Column-based Layout */}
       <div className="p-3">
@@ -101,11 +123,9 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
             </div>
 
             {/* Price */}
-            <div className="relative">
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-white/50 pointer-events-none">$</span>
+            <div>
               {p.type === "RECURRING" ? (
-                <Input
-                  type="number"
+                <CurrencyInput
                   min="0"
                   step="0.01"
                   value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
@@ -125,12 +145,11 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                     setLocalPrice(null);
                   }}
                   error={priceError || undefined}
-                  className="text-sm font-mono !pl-6 !pr-2 !py-1 text-right"
+                  className="text-sm !pr-2 !py-1 text-right"
                   placeholder="49"
                 />
               ) : (
-                <Input
-                  type="number"
+                <CurrencyInput
                   min="0"
                   step="0.01"
                   value={localPrice !== null ? localPrice : p.oneTimeListPrice}
@@ -150,7 +169,7 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
                     setLocalPrice(null);
                   }}
                   error={priceError || undefined}
-                  className="text-sm font-mono !pl-6 !pr-2 !py-1 text-right"
+                  className="text-sm !pr-2 !py-1 text-right"
                   placeholder="5000"
                 />
               )}
@@ -306,19 +325,39 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
               />
             </div>
 
-            {/* Toggles */}
-            <div className="flex items-center gap-4 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={p.includeInTotals}
-                  onChange={(e) => updateProduct(dealId, p.id, { includeInTotals: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded border-white/20 bg-white/10 focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-xs text-white/70">Include in totals</span>
-              </label>
-            </div>
           </div>
+        </div>
+      )}
+
+      {/* EPIC 10: Context Menu */}
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-slate-800 border border-white/20 rounded-lg shadow-xl overflow-hidden min-w-[180px]"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button
+            onClick={() => {
+              updateProduct(dealId, p.id, { includeInTotals: !p.includeInTotals });
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+          >
+            {p.includeInTotals ? (
+              <>
+                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                <span>Exclude from totals</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Include in totals</span>
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>

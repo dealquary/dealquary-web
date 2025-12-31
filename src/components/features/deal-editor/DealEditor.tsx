@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { InfoTooltip } from "@/components/ui/Tooltip";
 import ProductTable from "./ProductTable";
 import DealShapeBar from "@/components/deal/DealShapeBar";
@@ -157,16 +158,15 @@ export default function DealEditor() {
                       </label>
                     </div>
                     {deal.toggles.includeCAC ? (
-                      <Input
-                        type="number"
+                      <CurrencyInput
                         min="0"
                         value={deal.cac}
                         onChange={(e) => {
                           const val = Number(e.target.value);
                           if (val >= 0) updateDeal(selectedDealId, { cac: val });
                         }}
-                        className="font-mono !pr-3"
-                        placeholder="e.g., 12500"
+                        className="!pr-3"
+                        placeholder="12500"
                       />
                     ) : (
                       <p className="text-xs text-white/50 italic">Track the cost to acquire this customer and calculate LTV:CAC ratio</p>
