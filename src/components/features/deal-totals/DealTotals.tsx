@@ -6,11 +6,10 @@ import { Card } from "@/components/ui/Card";
 import { CashFlowChart } from "./CashFlowChart";
 import { calcDealTotals } from "@/lib/calc";
 import { money, num } from "@/lib/format";
-import { useSession, signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import MetricCard, { type MetricStatus } from "@/components/metrics/MetricCard";
 import { evaluateDealHealth } from "@/lib/dealHealth";
-import { ExportDrawer } from "@/components/features/export/ExportDrawer";
+import ExportMenu from "@/components/export/ExportMenu";
 import { getMetricStatus } from "@/lib/metricThresholds";
 import { getARRFormula, getTCVFormula, getProfitFormula, getLTVCACFormula, getPaybackFormula, getMarginFormula } from "@/lib/formulas";
 import ComparisonMetricRow from "@/components/metrics/ComparisonMetricRow";
@@ -36,16 +35,13 @@ export default function DealTotals() {
   const deals = useAppStore((s) => s.deals);
   const toggleComparedDeal = useAppStore((s) => s.toggleComparedDeal);
   const cloneDeal = useAppStore((s) => s.cloneDeal);
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [isExportDrawerOpen, setIsExportDrawerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true); // EPIC 1: Expanded by default
+  const { data: session, status } = useSession();
 
   if (!deal) return null;
 
   const totals = calcDealTotals(deal);
   const isPro = session?.user?.isPro || false;
-  const isAuthenticated = status === "authenticated";
 
   // EPIC 8: Comparison mode
   const isComparisonMode = comparedDealIds.length > 0;
@@ -64,18 +60,6 @@ export default function DealTotals() {
 
   // Calculate deal health
   const health = evaluateDealHealth(deal);
-
-  const handleExport = () => {
-    if (!isAuthenticated) {
-      signIn("google");
-      return;
-    }
-    if (!isPro) {
-      router.push("/billing");
-      return;
-    }
-    setIsExportDrawerOpen(true);
-  };
 
   return (
     <div className="space-y-3">
@@ -151,15 +135,8 @@ export default function DealTotals() {
                       Exit Comparison
                     </button>
                   )}
-                  <button
-                    onClick={handleExport}
-                    className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-cyan-300 hover:text-cyan-200 border border-cyan-400/30 bg-cyan-500/10 rounded-md hover:bg-cyan-500/20 transition-colors"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    {!isAuthenticated ? "Sign in to Export" : !isPro ? "Upgrade to Export" : "Export"}
-                  </button>
+                  {/* EPIC 9: Export Menu with PDF, Copy Summary, and Print options */}
+                  <ExportMenu deal={deal} totals={totals} />
                 </div>
               </div>
 
@@ -387,12 +364,6 @@ export default function DealTotals() {
           </div>
         </div>
       </Card>
-
-      {/* Export Drawer */}
-      <ExportDrawer
-        isOpen={isExportDrawerOpen}
-        onClose={() => setIsExportDrawerOpen(false)}
-      />
     </div>
   );
 }

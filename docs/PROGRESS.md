@@ -16,7 +16,7 @@
 ## Phase 4: Polish
 - [x] Epic 10: Remove clutter - COMPLETED
 - [x] Epic 8: Deal comparison (stretch) - COMPLETED
-- [ ] Epic 9: Export & sharing (stretch)
+- [x] Epic 9: Export & sharing (stretch) - COMPLETED
 
 ---
 
@@ -171,6 +171,22 @@
     - Menu auto-closes when clicking outside
 - Testing: Build passed with no errors
 - Next Steps: Commit Epic 10 completion
+
+**Epic 9: Export & Sharing**
+- Status: ✅ COMPLETED
+- Files changed:
+  - `src/lib/clipboardExport.ts` - NEW utility for plain text export
+  - `src/components/export/ExportMenu.tsx` - NEW export dropdown component
+  - `src/app/globals.css` - Enhanced print styles for clean PDF export
+  - `src/components/features/deal-totals/DealTotals.tsx` - Integrated ExportMenu
+- Implementation Details:
+  - Created plain text summary generator with deal health, metrics, and products
+  - Built export dropdown menu with 3 options: PDF, Copy Summary, Print
+  - Enhanced print stylesheet for clean PDF output (hides inputs, shows only metrics)
+  - Replaced gated export button with free export menu available to all users
+  - Success toast notifications for user feedback
+- Testing: Build passed with no errors
+- Next Steps: Commit Epic 9
 
 **Epic 3: Fix Dropdowns**
 - Status: ✅ COMPLETED
