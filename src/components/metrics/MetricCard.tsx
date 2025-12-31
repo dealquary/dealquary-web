@@ -102,9 +102,10 @@ export default function MetricCard({
   return (
     <div
       className={`
-        ${compact ? "p-2" : "p-3"} rounded-lg border transition-all
-        ${variant === "highlight" ? "bg-blue-500/10 border-blue-400/30" : "bg-white/5 border-white/10"}
+        ${compact ? "p-2" : "p-3"} rounded-lg border transition-all duration-200
+        ${variant === "highlight" ? "bg-blue-500/10 border-blue-400/30 hover:bg-blue-500/15" : "bg-white/5 border-white/10 hover:border-white/15"}
         ${getStatusStyles()}
+        ${isPulsing ? "animate-highlightFlash" : ""}
       `}
     >
       <div className="flex items-start justify-between gap-2">
@@ -113,7 +114,7 @@ export default function MetricCard({
         </div>
         {status && status !== "neutral" && statusLabel && (
           <div
-            className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold ${getStatusBadgeColor()}`}
+            className={`text-[9px] px-1.5 py-0.5 rounded-full border font-semibold ${getStatusBadgeColor()} animate-scaleIn`}
           >
             {statusLabel}
           </div>
@@ -124,7 +125,7 @@ export default function MetricCard({
         <div
           className={`
             ${compact ? "text-base" : "text-lg"} font-bold font-mono ${getTextColor()}
-            ${isPulsing ? "animate-pulse" : ""}
+            transition-all duration-300
           `}
         >
           {value}
@@ -134,11 +135,18 @@ export default function MetricCard({
         {delta && (
           <div
             className={`
-              absolute -top-1 left-full ml-2 text-[10px] font-mono font-semibold
+              absolute -top-1 left-full ml-2 text-[10px] font-mono font-semibold flex items-center gap-1
               ${delta.isPositive ? "text-green-400" : "text-red-400"}
-              animate-fadeIn
+              animate-slideInRight
             `}
           >
+            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              {delta.isPositive ? (
+                <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              ) : (
+                <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              )}
+            </svg>
             {delta.text}
           </div>
         )}
