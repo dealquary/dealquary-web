@@ -34,6 +34,7 @@ export default function DealTotals() {
   const comparedDealIds = useAppStore((s) => s.comparedDealIds);
   const deals = useAppStore((s) => s.deals);
   const toggleComparedDeal = useAppStore((s) => s.toggleComparedDeal);
+  const clearComparedDeals = useAppStore((s) => s.clearComparedDeals);
   const cloneDeal = useAppStore((s) => s.cloneDeal);
   const [isExpanded, setIsExpanded] = useState(true); // EPIC 1: Expanded by default
   const { data: session, status } = useSession();
@@ -126,7 +127,7 @@ export default function DealTotals() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => toggleComparedDeal(comparedDeal!.id)}
+                      onClick={clearComparedDeals}
                       className="print:hidden flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-300 hover:text-red-200 border border-red-400/30 bg-red-500/10 rounded-md hover:bg-red-500/20 transition-colors"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

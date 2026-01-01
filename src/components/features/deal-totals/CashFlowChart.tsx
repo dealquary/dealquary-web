@@ -18,10 +18,10 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
     );
   }
 
-  // Chart dimensions
-  const width = 100; // percentage-based for responsiveness
-  const height = 200;
-  const padding = { top: 20, right: 10, bottom: 30, left: 50 };
+  // Chart dimensions (in pixels for SVG viewBox)
+  const width = 600;
+  const height = 300;
+  const padding = { top: 30, right: 20, bottom: 50, left: 60 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
@@ -56,8 +56,8 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="w-full"
-        style={{ maxHeight: "200px" }}
-        preserveAspectRatio="none"
+        style={{ minHeight: "300px" }}
+        preserveAspectRatio="xMidYMid meet"
       >
         {/* Grid lines */}
         <g opacity="0.1">
@@ -117,7 +117,7 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
             <text
               x="0"
               y="-10"
-              fontSize="8"
+              fontSize="12"
               fill="#3B82F6"
               textAnchor="middle"
               fontWeight="600"
@@ -131,7 +131,7 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
         <text
           x={padding.left - 5}
           y={padding.top + scaleY(maxValue)}
-          fontSize="8"
+          fontSize="12"
           fill="#6B7280"
           textAnchor="end"
           alignmentBaseline="middle"
@@ -141,7 +141,7 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
         <text
           x={padding.left - 5}
           y={padding.top + scaleY(0)}
-          fontSize="8"
+          fontSize="12"
           fill="#6B7280"
           textAnchor="end"
           alignmentBaseline="middle"
@@ -152,7 +152,7 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
           <text
             x={padding.left - 5}
             y={padding.top + scaleY(minValue)}
-            fontSize="8"
+            fontSize="12"
             fill="#6B7280"
             textAnchor="end"
             alignmentBaseline="middle"
@@ -164,8 +164,8 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
         {/* X-axis labels */}
         <text
           x={padding.left}
-          y={height - 10}
-          fontSize="8"
+          y={height - 20}
+          fontSize="12"
           fill="#6B7280"
           textAnchor="middle"
         >
@@ -173,8 +173,8 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
         </text>
         <text
           x={padding.left + chartWidth}
-          y={height - 10}
-          fontSize="8"
+          y={height - 20}
+          fontSize="12"
           fill="#6B7280"
           textAnchor="middle"
         >
@@ -183,22 +183,22 @@ export function CashFlowChart({ deal }: CashFlowChartProps) {
 
         {/* Y-axis label */}
         <text
-          x={10}
+          x={15}
           y={padding.top + chartHeight / 2}
-          fontSize="9"
+          fontSize="12"
           fill="#6B7280"
           textAnchor="middle"
-          transform={`rotate(-90, 10, ${padding.top + chartHeight / 2})`}
+          transform={`rotate(-90, 15, ${padding.top + chartHeight / 2})`}
           fontWeight="600"
         >
           Cumulative Profit ($)
         </text>
 
-        {/* EPIC 2: X-axis label */}
+        {/* X-axis label */}
         <text
           x={padding.left + chartWidth / 2}
-          y={height - 2}
-          fontSize="9"
+          y={height - 5}
+          fontSize="12"
           fill="#6B7280"
           textAnchor="middle"
           fontWeight="600"

@@ -165,25 +165,24 @@ interface ComputedMetrics {
 ## Current Sprint: UI/UX Improvements
 
 ### Documentation
-- Full implementation plan: `docs/IMPLEMENTATION_PLAN.md`
-- Progress tracking: `docs/PROGRESS.md`
-- When completing an epic, append a dated entry to the Log section in docs/PROGRESS.md
+- Follow implementation list: `docs/IMPLEMENTATION_PLAN.md`
+- After completing a task, UPDATE `docs/PROGRESS.md`
+- After Completelting a task check claude codes memory, if over 65&, then write a summary of where it's at and then restart memory.
+- When completing an task, append a dated entry to the Log section in docs/PROGRESS.md
 
 ### Implementation Order
-1. Epic 3: Fix dropdowns (P0) - BLOCKING
-2. Epic 1: Output-first layout (P0)
-3. Epic 4: Input validation (P0)
-4. Epic 2: Deal health transparency (P0)
-5. Epic 5: Math transparency (P1)
-6. Epic 6: Product line improvements (P1)
-7. Epic 7: Section naming (P1)
-8. Epic 10: Remove clutter (P2)
+1. task 1
+2. task 2
+3. task 3
+4. task 4
+5. task 5
+6. task 6
+7. task 7
 
 ### Workflow
-1. Before starting, run repository discovery (see Task 0 in implementation plan)
-2. Read the relevant epic section in `docs/IMPLEMENTATION_PLAN.md`
-3. Work ONE epic at a time
-4. After completing each epic:
+1. Before starting, run repository discovery (see IMPLEMENTATION_PLAN.md)
+3. Work ONE Task at a time
+4. After completing each Task:
    - Verify all acceptance criteria in the plan
    - Run `npm run lint` and `npm run build`
    - Update `docs/PROGRESS.md`

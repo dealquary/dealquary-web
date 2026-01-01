@@ -1,48 +1,18 @@
-Acceptance Criteria Summary
-Critical (Must Pass)
+Acceptance Criteria
+Paywall Fix:
 
- Deal Metrics panel visible on page load without interaction
- All dropdowns (Billing Cadence, Contract Length) open on click
- Input validation shows inline error messages
- No JavaScript console errors
- npm run build passes
- npm run lint passes
+ Unauthenticated users cannot export PDF (shows sign-in prompt or upgrade modal)
+ Free plan users see upgrade modal when clicking Export PDF
+ Pro users can export PDF without interruption
+ "PRO" badge appears next to Export PDF for free users
+ Upgrade modal has working link to /billing page
 
-High Priority
+Chart Fix:
 
- Math rollup visible: "$X/mo × 12 = $Y ARR"
- Deal Health shows STRENGTHS/CONCERNS without clicking "Why?"
- LTV:CAC has color coding based on thresholds
- Chart has labeled axes
- Margin input is inline, not hidden
- Formulas visible on metric hover
-
-Polish
-
- "Click to collapse" removed
- "$" is inside price input
- Only one "Add Product" button when products exist
- Section naming is clear ("Deal Economics")
-
- Implementation Order Checklist
-Phase 1: Critical Fixes (Do First)
-
- Epic 3: Fix dropdown interactions (unblocks core usability)
- Epic 1: Output-first layout (most impactful visual change)
- Epic 4: Input validation (trust/reliability)
-
-Phase 2: Trust & Transparency
-
- Epic 2: Deal Health transparency (always-visible reasoning)
- Epic 5: Math transparency (formula tooltips)
-
-Phase 3: Workflow Improvements
-
- Epic 6: Product line item improvements (inline margin, ARR column)
- Epic 7: Section naming & organization
-
-Phase 4: Polish (Last)
-
- Epic 10: Remove UI clutter
- Epic 8: Deal comparison (if time permits)
- Epic 9: Export & sharing (if time permits)
+ Chart height is at least 200px
+ X-axis month labels are readable (no overlap)
+ Y-axis shows currency values with proper formatting
+ Break-even line is visible at y=0
+ Break-even month marker is visible
+ Chart is responsive and doesn't break on resize
+ Legend is visible and not cut off
