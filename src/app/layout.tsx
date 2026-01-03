@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { Footer } from "@/components/Footer";
 import { Roboto_Mono } from "next/font/google";
 
 const robotoMono = Roboto_Mono({
@@ -25,10 +26,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={robotoMono.variable}>
-      <body className="min-h-screen">
+      <body className="min-h-screen flex flex-col">
         <ErrorBoundary>
           <SessionProvider>
-            {children}
+            <div className="flex-1">{children}</div>
+            <Footer />
             <FeedbackWidget />
           </SessionProvider>
         </ErrorBoundary>
