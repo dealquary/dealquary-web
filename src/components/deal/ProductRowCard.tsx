@@ -83,11 +83,6 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
     }
   }, [contextMenu]);
 
-  // EPIC 6: Dynamic grid template based on product type
-  const gridCols = p.type === "RECURRING"
-    ? "grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_1fr_auto]" // With Licenses column
-    : "grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto]";     // Without Licenses column
-
   return (
     <div
       id={index === 0 ? "product-row-0" : undefined}
@@ -97,187 +92,321 @@ export default function ProductRowCard({ product: p, deal, dealId, index, isLast
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
     >
-      {/* EPIC 6: Main Row - Column-based Layout */}
+      {/* Mobile & Desktop Layout - Responsive 2-row on mobile, 1-row on desktop */}
       <div className="p-3">
-        <div className={`grid ${gridCols} gap-2 items-center`}>
-            {/* Product Number */}
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-white text-xs font-semibold flex-shrink-0">
-              {index + 1}
-            </div>
+        {/* Row 1: Product #, Name, Actions (always on first row) */}
+        <div className="grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
+          {/* Product Number */}
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-white text-xs font-semibold flex-shrink-0">
+            {index + 1}
+          </div>
 
-            {/* Product Name */}
-            <div className="min-w-0">
-              <Input
-                value={localName !== null ? localName : p.name}
+          {/* Product Name */}
+          <div className="min-w-0 md:col-auto">
+            <Input
+              value={localName !== null ? localName : p.name}
+              onChange={(e) => {
+                setLocalName(e.target.value);
+              }}
+              onBlur={(e) => {
+                const trimmed = e.target.value.trim();
+                updateProduct(dealId, p.id, { name: trimmed });
+                setLocalName(null);
+              }}
+              placeholder={p.type === "RECURRING" ? "Product Name" : "Service Name"}
+              className="text-sm border-0 !px-2 !py-1 !bg-transparent !ring-0 hover:!bg-white/5 font-medium"
+            />
+          </div>
+
+          {/* Price - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:block">
+            {p.type === "RECURRING" ? (
+              <CurrencyInput
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
                 onChange={(e) => {
-                  setLocalName(e.target.value);
+                  setLocalPrice(e.target.value);
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
                 }}
                 onBlur={(e) => {
-                  const trimmed = e.target.value.trim();
-                  updateProduct(dealId, p.id, { name: trimmed });
-                  setLocalName(null);
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { listPricePerUnitMonthly: val });
+                  }
+                  setLocalPrice(null);
                 }}
-                placeholder={p.type === "RECURRING" ? "Product Name" : "Service Name"}
-                className="text-sm border-0 !px-2 !py-1 !bg-transparent !ring-0 hover:!bg-white/5 font-medium"
+                error={priceError || undefined}
+                className="text-sm !pr-2 !py-1 text-right"
+                placeholder="49"
               />
-            </div>
+            ) : (
+              <CurrencyInput
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.oneTimeListPrice}
+                onChange={(e) => {
+                  setLocalPrice(e.target.value);
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { oneTimeListPrice: val });
+                  }
+                  setLocalPrice(null);
+                }}
+                error={priceError || undefined}
+                className="text-sm !pr-2 !py-1 text-right"
+                placeholder="5000"
+              />
+            )}
+          </div>
 
-            {/* Price */}
-            <div>
-              {p.type === "RECURRING" ? (
-                <CurrencyInput
-                  min="0"
-                  step="0.01"
-                  value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
-                  onChange={(e) => {
-                    setLocalPrice(e.target.value);
-                    const val = Number(e.target.value);
-                    const error = validators.price(val);
-                    setPriceError(error);
-                  }}
-                  onBlur={(e) => {
-                    const val = Number(e.target.value);
-                    const error = validators.price(val);
-                    setPriceError(error);
-                    if (!error) {
-                      updateProduct(dealId, p.id, { listPricePerUnitMonthly: val });
-                    }
-                    setLocalPrice(null);
-                  }}
-                  error={priceError || undefined}
-                  className="text-sm !pr-2 !py-1 text-right"
-                  placeholder="49"
-                />
-              ) : (
-                <CurrencyInput
-                  min="0"
-                  step="0.01"
-                  value={localPrice !== null ? localPrice : p.oneTimeListPrice}
-                  onChange={(e) => {
-                    setLocalPrice(e.target.value);
-                    const val = Number(e.target.value);
-                    const error = validators.price(val);
-                    setPriceError(error);
-                  }}
-                  onBlur={(e) => {
-                    const val = Number(e.target.value);
-                    const error = validators.price(val);
-                    setPriceError(error);
-                    if (!error) {
-                      updateProduct(dealId, p.id, { oneTimeListPrice: val });
-                    }
-                    setLocalPrice(null);
-                  }}
-                  error={priceError || undefined}
-                  className="text-sm !pr-2 !py-1 text-right"
-                  placeholder="5000"
-                />
-              )}
-            </div>
+          {/* Margin % - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:block">
+            <Input
+              type="number"
+              min="0"
+              max="1"
+              step="0.01"
+              value={localMargin !== null ? localMargin : p.marginPct}
+              onChange={(e) => {
+                setLocalMargin(e.target.value);
+                const val = Number(e.target.value);
+                const error = validators.margin(val);
+                setMarginError(error);
+              }}
+              onBlur={(e) => {
+                const val = Number(e.target.value);
+                const error = validators.margin(val);
+                setMarginError(error);
+                if (!error) {
+                  updateProduct(dealId, p.id, { marginPct: val });
+                }
+                setLocalMargin(null);
+              }}
+              error={marginError || undefined}
+              className="text-sm font-mono !px-2 !py-1 text-right"
+              placeholder="0.70"
+            />
+          </div>
 
-            {/* EPIC 6: Margin % - Moved from Advanced */}
-            <div>
+          {/* Licenses (recurring only) - Hidden on mobile, shown on desktop */}
+          {p.type === "RECURRING" && (
+            <div className="hidden md:block">
               <Input
                 type="number"
-                min="0"
-                max="1"
-                step="0.01"
-                value={localMargin !== null ? localMargin : p.marginPct}
+                min="1"
+                value={localLicenses !== null ? localLicenses : p.licenses}
                 onChange={(e) => {
-                  setLocalMargin(e.target.value);
+                  setLocalLicenses(e.target.value);
                   const val = Number(e.target.value);
-                  const error = validators.margin(val);
-                  setMarginError(error);
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
                 }}
                 onBlur={(e) => {
                   const val = Number(e.target.value);
-                  const error = validators.margin(val);
-                  setMarginError(error);
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
                   if (!error) {
-                    updateProduct(dealId, p.id, { marginPct: val });
+                    updateProduct(dealId, p.id, { licenses: Math.floor(val) });
                   }
-                  setLocalMargin(null);
+                  setLocalLicenses(null);
                 }}
-                error={marginError || undefined}
+                error={licensesError || undefined}
                 className="text-sm font-mono !px-2 !py-1 text-right"
-                placeholder="0.70"
+                placeholder="50"
               />
             </div>
+          )}
 
-            {/* Licenses (recurring only) */}
-            {p.type === "RECURRING" && (
-              <div>
-                <Input
-                  type="number"
-                  min="1"
-                  value={localLicenses !== null ? localLicenses : p.licenses}
-                  onChange={(e) => {
-                    setLocalLicenses(e.target.value);
-                    const val = Number(e.target.value);
-                    const error = validators.licenses(val);
-                    setLicensesError(error);
-                  }}
-                  onBlur={(e) => {
-                    const val = Number(e.target.value);
-                    const error = validators.licenses(val);
-                    setLicensesError(error);
-                    if (!error) {
-                      updateProduct(dealId, p.id, { licenses: Math.floor(val) });
-                    }
-                    setLocalLicenses(null);
-                  }}
-                  error={licensesError || undefined}
-                  className="text-sm font-mono !px-2 !py-1 text-right"
-                  placeholder="50"
-                />
-              </div>
+          {/* MRR - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:block text-sm font-mono text-white/70 text-right">
+            {money(lineTotals.monthlyRevenue)}
+          </div>
+
+          {/* ARR - Hidden on mobile, shown on desktop */}
+          <div className="hidden md:block text-sm font-mono text-cyan-300 text-right font-semibold">
+            {p.type === "RECURRING" ? money(lineTotals.annualizedRevenue) : "—"}
+          </div>
+
+          {/* Actions: Advanced Toggle + Delete */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex-shrink-0 p-1 hover:bg-white/10 rounded transition-colors"
+              title="Advanced settings"
+            >
+              <svg
+                className={`w-4 h-4 text-white/60 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <Button
+              variant="danger"
+              onClick={() => removeProduct(dealId, p.id)}
+              className="!px-2 !py-1 text-sm flex-shrink-0"
+            >
+              ×
+            </Button>
+          </div>
+        </div>
+
+        {/* Row 2: Mobile-only second row with Price, Margin, Licenses, MRR, ARR */}
+        <div className="grid grid-cols-2 gap-2 mt-2 md:hidden">
+          {/* Price */}
+          <div>
+            <label className="text-[10px] text-white/40 uppercase tracking-wide block mb-1">Price</label>
+            {p.type === "RECURRING" ? (
+              <CurrencyInput
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.listPricePerUnitMonthly}
+                onChange={(e) => {
+                  setLocalPrice(e.target.value);
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { listPricePerUnitMonthly: val });
+                  }
+                  setLocalPrice(null);
+                }}
+                error={priceError || undefined}
+                className="text-sm !pr-2 !py-1 text-right"
+                placeholder="49"
+              />
+            ) : (
+              <CurrencyInput
+                min="0"
+                step="0.01"
+                value={localPrice !== null ? localPrice : p.oneTimeListPrice}
+                onChange={(e) => {
+                  setLocalPrice(e.target.value);
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const error = validators.price(val);
+                  setPriceError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { oneTimeListPrice: val });
+                  }
+                  setLocalPrice(null);
+                }}
+                error={priceError || undefined}
+                className="text-sm !pr-2 !py-1 text-right"
+                placeholder="5000"
+              />
             )}
+          </div>
 
-            {/* EPIC 6: MRR Column */}
-            <div className="text-sm font-mono text-white/70 text-right">
+          {/* Margin % */}
+          <div>
+            <label className="text-[10px] text-white/40 uppercase tracking-wide block mb-1">Margin %</label>
+            <Input
+              type="number"
+              min="0"
+              max="1"
+              step="0.01"
+              value={localMargin !== null ? localMargin : p.marginPct}
+              onChange={(e) => {
+                setLocalMargin(e.target.value);
+                const val = Number(e.target.value);
+                const error = validators.margin(val);
+                setMarginError(error);
+              }}
+              onBlur={(e) => {
+                const val = Number(e.target.value);
+                const error = validators.margin(val);
+                setMarginError(error);
+                if (!error) {
+                  updateProduct(dealId, p.id, { marginPct: val });
+                }
+                setLocalMargin(null);
+              }}
+              error={marginError || undefined}
+              className="text-sm font-mono !px-2 !py-1 text-right"
+              placeholder="0.70"
+            />
+          </div>
+
+          {/* Licenses (recurring only) */}
+          {p.type === "RECURRING" && (
+            <div>
+              <label className="text-[10px] text-white/40 uppercase tracking-wide block mb-1">Licenses</label>
+              <Input
+                type="number"
+                min="1"
+                value={localLicenses !== null ? localLicenses : p.licenses}
+                onChange={(e) => {
+                  setLocalLicenses(e.target.value);
+                  const val = Number(e.target.value);
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
+                }}
+                onBlur={(e) => {
+                  const val = Number(e.target.value);
+                  const error = validators.licenses(val);
+                  setLicensesError(error);
+                  if (!error) {
+                    updateProduct(dealId, p.id, { licenses: Math.floor(val) });
+                  }
+                  setLocalLicenses(null);
+                }}
+                error={licensesError || undefined}
+                className="text-sm font-mono !px-2 !py-1 text-right"
+                placeholder="50"
+              />
+            </div>
+          )}
+
+          {/* MRR */}
+          <div>
+            <label className="text-[10px] text-white/40 uppercase tracking-wide block mb-1">MRR</label>
+            <div className="text-sm font-mono text-white/70 text-right bg-white/5 rounded px-2 py-1.5 border border-white/10">
               {money(lineTotals.monthlyRevenue)}
-            </div>
-
-            {/* EPIC 6: ARR Column */}
-            <div className="text-sm font-mono text-cyan-300 text-right font-semibold">
-              {p.type === "RECURRING" ? money(lineTotals.annualizedRevenue) : "—"}
-            </div>
-
-            {/* Actions: Advanced Toggle + Delete */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex-shrink-0 p-1 hover:bg-white/10 rounded transition-colors"
-                title="Advanced settings"
-              >
-                <svg
-                  className={`w-4 h-4 text-white/60 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <Button
-                variant="danger"
-                onClick={() => removeProduct(dealId, p.id)}
-                className="!px-2 !py-1 text-sm flex-shrink-0"
-              >
-                ×
-              </Button>
             </div>
           </div>
 
-          {/* EPIC 5: Effective price after discount */}
-          {p.customerDiscountValue > 0 && (
-            <div className="mt-2 text-xs text-white/40 font-mono col-span-full">
-              {p.type === "RECURRING"
-                ? getEffectivePriceDisplay(p.listPricePerUnitMonthly, p.customerDiscountMode, p.customerDiscountValue)
-                : getEffectivePriceDisplay(p.oneTimeListPrice, p.customerDiscountMode, p.customerDiscountValue)}
+          {/* ARR */}
+          <div>
+            <label className="text-[10px] text-white/40 uppercase tracking-wide block mb-1">ARR</label>
+            <div className="text-sm font-mono text-cyan-300 text-right font-semibold bg-white/5 rounded px-2 py-1.5 border border-white/10">
+              {p.type === "RECURRING" ? money(lineTotals.annualizedRevenue) : "—"}
             </div>
-          )}
+          </div>
         </div>
+
+        {/* EPIC 5: Effective price after discount */}
+        {p.customerDiscountValue > 0 && (
+          <div className="mt-2 text-xs text-white/40 font-mono px-3">
+            {p.type === "RECURRING"
+              ? getEffectivePriceDisplay(p.listPricePerUnitMonthly, p.customerDiscountMode, p.customerDiscountValue)
+              : getEffectivePriceDisplay(p.oneTimeListPrice, p.customerDiscountMode, p.customerDiscountValue)}
+          </div>
+        )}
+      </div>
 
       {/* EPIC 6: Advanced Section - Simplified (margin moved to main row) */}
       {showAdvanced && (

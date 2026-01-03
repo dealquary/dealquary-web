@@ -87,7 +87,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
               </div>
             ) : (
               <div className="space-y-2">
-                {/* EPIC 6: Column Headers */}
+                {/* EPIC 6: Column Headers - Hidden on mobile, shown on desktop */}
                 {deal.products.length > 0 && (() => {
                   const firstProduct = deal.products[0];
                   const gridCols = firstProduct.type === "RECURRING"
@@ -95,7 +95,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
                     : "grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto]";
 
                   return (
-                    <div className={`grid ${gridCols} gap-2 px-3 py-2 mb-1`}>
+                    <div className={`hidden md:grid ${gridCols} gap-2 px-3 py-2 mb-1`}>
                       <div className="w-6" /> {/* Product number column */}
                       <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wide">Name</div>
                       <div className="text-[10px] font-semibold text-white/40 uppercase tracking-wide text-right">Price</div>
