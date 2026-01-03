@@ -81,6 +81,14 @@ export async function POST(req: NextRequest) {
       ],
       success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/billing/cancel`,
+      consent_collection: {
+        terms_of_service: "required",
+      },
+      custom_text: {
+        terms_of_service_acceptance: {
+          message: `By subscribing, you agree to our [Terms of Service](${appUrl}/terms) and [Privacy Policy](${appUrl}/privacy).`,
+        },
+      },
       metadata: {
         userId: user.id, // CRITICAL: Used by webhook to find user
       },
