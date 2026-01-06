@@ -22,6 +22,25 @@ const authConfig = NextAuth({
       }
       return session;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async signIn({ user }: any) {
+      // Record terms acceptance timestamp for new users
+      if (user && user.id) {
+        const existingUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { termsAcceptedAt: true },
+        });
+
+        // Only set termsAcceptedAt if it's not already set (first sign-in)
+        if (existingUser && !existingUser.termsAcceptedAt) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { termsAcceptedAt: new Date() },
+          });
+        }
+      }
+      return true;
+    },
   },
   session: {
     strategy: "database",

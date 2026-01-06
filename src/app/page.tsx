@@ -10,7 +10,7 @@ import AppBackground from "@/components/AppBackground";
 import { Drawer } from "@/components/ui/Drawer";
 import { UserMenu } from "@/components/UserMenu";
 import { useSession } from "next-auth/react";
-import { TutorialTooltip } from "@/components/tutorial/TutorialTooltip";
+import { OnboardingTutorial } from "@/components/tutorial/OnboardingTutorial";
 
 
 export default function Page() {
@@ -152,8 +152,8 @@ export default function Page() {
         </div>
       </footer>
 
-      {/* Tutorial Tooltip */}
-      <TutorialTooltip />
+      {/* Onboarding Tutorial */}
+      <OnboardingTutorial />
     </AppBackground>
   );
 }

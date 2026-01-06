@@ -1,16 +1,22 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleGoogleSignIn = async () => {
+    if (!acceptedTerms) {
+      return; // Should not happen due to disabled button, but extra safety
+    }
+
     try {
       await signIn("google", { callbackUrl });
     } catch (error) {
@@ -31,9 +37,44 @@ function SignInContent() {
             </p>
           </div>
 
+          {/* Terms Acceptance Checkbox */}
+          <div className="mb-6 bg-white/5 rounded-lg p-4 border border-white/10">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-white/30 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-900 cursor-pointer"
+              />
+              <span className="text-white/80 text-sm leading-relaxed">
+                I agree to the{" "}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+          </div>
+
           <Button
             variant="primary"
             onClick={handleGoogleSignIn}
+            disabled={!acceptedTerms}
             className="w-full !py-3"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -57,8 +98,14 @@ function SignInContent() {
             Continue with Google
           </Button>
 
+          {!acceptedTerms && (
+            <p className="text-xs text-orange-400/80 text-center mt-3">
+              Please accept the terms to continue
+            </p>
+          )}
+
           <p className="text-xs text-white/40 text-center mt-6">
-            By signing in, you agree to our Terms of Service and Privacy Policy
+            Your data is encrypted and secure. We never share your information.
           </p>
         </div>
       </Card>

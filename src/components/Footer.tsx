@@ -11,18 +11,30 @@ export function Footer() {
           </div>
 
           {/* Center/Right: Links */}
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm">
             <Link
               href="/terms"
               className="text-white/60 hover:text-cyan-400 transition-colors"
             >
-              Terms of Service
+              Terms
             </Link>
             <Link
               href="/privacy"
               className="text-white/60 hover:text-cyan-400 transition-colors"
             >
-              Privacy Policy
+              Privacy
+            </Link>
+            <Link
+              href="/dpa"
+              className="text-white/60 hover:text-cyan-400 transition-colors"
+            >
+              DPA
+            </Link>
+            <Link
+              href="/subprocessors"
+              className="text-white/60 hover:text-cyan-400 transition-colors"
+            >
+              Sub-processors
             </Link>
             <a
               href="mailto:support@dealquary.com"
