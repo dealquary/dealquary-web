@@ -31,6 +31,7 @@ export default function DealEditor() {
         <div className="p-4">
           <Input
             id="deal-name-input"
+            data-tutorial="deal-name"
             value={displayName}
             onChange={(e) => {
               setLocalName(e.target.value);
@@ -56,7 +57,7 @@ export default function DealEditor() {
 
       {/* Deal Shape - Collapsible */}
       <Card glow="none">
-        <div className="p-4" id="deal-shape-section">
+        <div className="p-4" id="deal-shape-section" data-tutorial="deal-shape">
           <button
             onClick={() => setShowDealShape(!showDealShape)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
@@ -101,7 +102,7 @@ export default function DealEditor() {
 
       {/* EPIC 7: Deal Economics (formerly Advanced Guardrails) - Collapsible */}
       <Card glow="none">
-        <div className="p-4" id="deal-economics-section">
+        <div className="p-4" id="deal-economics-section" data-tutorial="deal-economics">
           <button
             onClick={() => setShowDealEconomics(!showDealEconomics)}
             className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"

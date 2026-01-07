@@ -15,7 +15,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
 
   return (
     <Card glow="none">
-      <div className="p-4" id="products-section">
+      <div className="p-4" id="products-section" data-tutorial="products">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full text-left flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-all duration-200 group active:scale-[0.98]"
@@ -78,6 +78,7 @@ export default function ProductTable({ dealId }: { dealId: string }) {
                   Start with pricing, margin, and term assumptions — metrics update instantly
                 </p>
                 <Button
+                  id="add-product-button"
                   variant="primary"
                   onClick={() => addProduct(dealId, "RECURRING")}
                   className="!text-sm"

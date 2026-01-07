@@ -14,6 +14,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^5.22.0",
+    "driver.js": "^1.4.0",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "next": "^15.2.8",

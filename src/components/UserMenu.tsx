@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { Button } from "./ui/Button";
 import Link from "next/link";
 import Image from "next/image";
+import { restartTutorial } from "./tutorial/Tutorial";
 
 export function UserMenu() {
   const { data: session, status } = useSession();
@@ -180,12 +181,11 @@ export function UserMenu() {
             {/* Tutorial */}
             <div className="border-t border-white/10 my-1" />
 
-            {/* Restart Onboarding */}
+            {/* Restart Tutorial */}
             <button
               onClick={() => {
-                localStorage.removeItem("dealquary-tutorial-completed");
                 setIsOpen(false);
-                window.location.reload();
+                restartTutorial();
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 transition-colors"
             >

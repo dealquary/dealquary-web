@@ -63,7 +63,7 @@ export default function DealTotals() {
   const health = evaluateDealHealth(deal);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-tutorial="deal-metrics">
       {/* Deal Header - EPIC 1: Distinct visual treatment */}
       <Card glow="cyan" className="bg-slate-900/50 border-l-2 border-cyan-500">
         <div className="p-3" id="deal-metrics-section">
