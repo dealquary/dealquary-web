@@ -1,6 +1,7 @@
 import React from "react";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <FeedbackWidget />
           </SessionProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
