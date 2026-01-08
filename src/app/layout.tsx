@@ -6,6 +6,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
+import { Analytics } from "@vercel/analytics/next";
 import { Roboto_Mono } from "next/font/google";
 
 const robotoMono = Roboto_Mono({
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <FeedbackWidget />
           </SessionProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
